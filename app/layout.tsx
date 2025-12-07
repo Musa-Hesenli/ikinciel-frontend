@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "İkinciel - Buy & Sell Second-Hand Items",
-  description: "The largest marketplace for buying and selling second-hand items in Azerbaijan",
+  title: "Elan.az - Azərbaycanın ən böyük elan saytı",
+  description: "Asan, sürətli və etibarlı alış-verişin ünvanı. Nəqliyyat, daşınmaz əmlak, elektronika və daha çox.",
 };
 
 export default function RootLayout({
@@ -24,14 +24,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="az">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen bg-background-light dark:bg-background-dark`}
       >
         <Header />
-        <main className="flex-1">
-          {children}
-        </main>
+        {children}
         <Footer />
       </body>
     </html>

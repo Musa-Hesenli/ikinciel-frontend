@@ -1,90 +1,204 @@
-import Link from 'next/link';
-import { Container } from '@/components/layout';
-import SearchBar from '@/components/features/search/SearchBar';
 import CategoryGrid from '@/components/features/categories/CategoryGrid';
 import ProductGrid from '@/components/features/products/ProductGrid';
-import { Button } from '@/components/ui';
-import { ROUTES } from '@/constants';
 import { Category, Product } from '@/types';
 
 // Mock data - replace with actual API calls
 const mockCategories: Category[] = [
-  { id: '1', name: 'Electronics', slug: 'electronics', icon: '💻', productCount: 1234 },
-  { id: '2', name: 'Vehicles', slug: 'vehicles', icon: '🚗', productCount: 856 },
-  { id: '3', name: 'Real Estate', slug: 'real-estate', icon: '🏠', productCount: 543 },
-  { id: '4', name: 'Fashion', slug: 'fashion', icon: '👔', productCount: 2341 },
-  { id: '5', name: 'Home & Garden', slug: 'home-garden', icon: '🛋️', productCount: 987 },
-  { id: '6', name: 'Sports', slug: 'sports', icon: '⚽', productCount: 456 },
+  { id: '1', name: 'Nəqliyyat', slug: 'transport', icon: 'directions_car' },
+  { id: '2', name: 'Daşınmaz əmlak', slug: 'real-estate', icon: 'home' },
+  { id: '3', name: 'Elektronika', slug: 'electronics', icon: 'devices' },
+  { id: '4', name: 'İş və biznes', slug: 'business', icon: 'work' },
+  { id: '5', name: 'Şəxsi əşyalar', slug: 'personal', icon: 'watch' },
+  { id: '6', name: 'Hobbi və asudə', slug: 'hobbies', icon: 'sports_esports' },
+  { id: '7', name: 'Heyvanlar', slug: 'animals', icon: 'pets' },
+  { id: '8', name: 'Xidmətlər', slug: 'services', icon: 'home_repair_service' },
+  { id: '9', name: 'Uşaq aləmi', slug: 'kids', icon: 'stroller' },
+  { id: '10', name: 'Ev və bağ üçün', slug: 'home-garden', icon: 'chair' },
+  { id: '11', name: 'Təmir və tikinti', slug: 'construction', icon: 'construction' },
+  { id: '12', name: 'Digər', slug: 'other', icon: 'more_horiz' },
 ];
 
 const mockProducts: Product[] = [
   {
     id: '1',
-    title: 'iPhone 13 Pro Max 256GB',
-    description: 'Great condition, barely used',
-    price: 1500,
-    currency: '₼',
-    images: ['/placeholder-product.jpg'],
-    category: mockCategories[0],
-    location: { id: '1', city: 'Baku', region: 'Nasimi', country: 'Azerbaijan' },
+    title: 'Nəsimi rayonunda 2 otaqlı mənzil',
+    description: 'Təmirli mənzil',
+    price: 135000,
+    currency: 'AZN',
+    images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuBALyIDea0fsnHv4JFqFXAxbRxqXKUjCe-nJ-fJ6Yb9aoZqPBY52wZra33-aR8Pmqzh547WLQeA_OdhuYmBfZQ_SmqCDxh62WkU3T53fn8Jcbj4hzRknEUEEo7MiT69qNfzr05-UxGQcNJADkRYnjegCjsfW3NrmtxTeJc3HYzzBrgYCZGvkhIeDsTX1byGf40vu6ahL6lsNyqfV5Yp3REh45veCC4Jjp5lGJbRqyc6hQuqzLrKwFGDk204uUhZk0NeXLmZvdEYHtw'],
+    category: mockCategories[1],
+    location: { id: '1', city: 'Bakı', region: 'Nəsimi', country: 'Azerbaijan' },
     seller: { id: '1', name: 'John Doe', email: 'john@example.com', createdAt: new Date(), isVerified: true },
     condition: 'used',
     status: 'active',
     viewCount: 245,
     favoriteCount: 12,
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
     updatedAt: new Date(),
-    isFeatured: true,
+    isPremium: true,
+    store: { id: '1', name: 'Prestige Homes', isVerified: true },
   },
   {
     id: '2',
-    title: 'MacBook Pro 14" M1 Pro',
-    description: 'Like new, with original box',
-    price: 3200,
-    currency: '₼',
-    images: ['/placeholder-product.jpg'],
+    title: 'Mercedes-Benz C-Class, 2012',
+    description: 'Yaxşı vəziyyətdə',
+    price: 25500,
+    currency: 'AZN',
+    images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuCB-tOrVSYrosblx83moP3JuomgOiJ5CPr3mAJATFLa-Ca9DgdmwrukBjlJRL4_Mc8yyh2-uhSt_zS7jQu-uqEyS0cNEFsMxD6bYfQHw5kzj5pq21wu7pXBU2FqxkhAPhqmbcUc5I9-AWpup0_ONbOAVfIhnf-v0lO3yFfriv1zYndZBXl6XA5xjFtV0m0S4IgSS2SJS1Z5CCTyyC6PCUPxsicf4PQiiF6cmGiZs7hTMEZwD1Cw0EKt4gYWz4D1T9Fy9nf_-oT0LIQ'],
     category: mockCategories[0],
-    location: { id: '2', city: 'Baku', region: 'Yasamal', country: 'Azerbaijan' },
+    location: { id: '2', city: 'Sumqayıt', region: 'Sumqayıt', country: 'Azerbaijan' },
     seller: { id: '2', name: 'Jane Smith', email: 'jane@example.com', createdAt: new Date(), isVerified: true },
-    condition: 'new',
+    condition: 'used',
     status: 'active',
     viewCount: 189,
     favoriteCount: 8,
-    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
     updatedAt: new Date(),
+    isPromoted: true,
   },
   {
     id: '3',
-    title: 'Samsung Galaxy S23 Ultra',
-    description: 'Perfect condition, under warranty',
-    price: 1800,
-    currency: '₼',
-    images: ['/placeholder-product.jpg'],
-    category: mockCategories[0],
-    location: { id: '3', city: 'Baku', region: 'Sabunchu', country: 'Azerbaijan' },
+    title: 'Apple iPhone 14 Pro Max',
+    description: 'Ideal vəziyyətdə',
+    price: 1200,
+    currency: 'AZN',
+    images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuCpNALD7ss1o2G_YcVp1G3jzMNWDlVJdPGSIgRsasgNRaTHCh4ZkovaEZ1x1dkFPMnbA7UHesbHqdX0Q2tIHuiR5JGBEcp22Dg9IFBIyj3Qyk-hOARpBjuuSxtbPMEeyhiqt66wSSk1uoWYd7L_EsuiyctDuyGle7E3a3Ch5GF0kz-H9fOSfK9cd0gvLNTP9kCqI92do_ZKMdO3Gi8C4pX8Gm-m6qeYHOeAxRi_T-hIw7Ifm1r-CWfk2RsNC-S7O1HRZQa6lG5FY3k'],
+    category: mockCategories[2],
+    location: { id: '3', city: 'Gəncə', region: 'Gəncə', country: 'Azerbaijan' },
     seller: { id: '3', name: 'Mike Johnson', email: 'mike@example.com', createdAt: new Date(), isVerified: false },
     condition: 'used',
     status: 'active',
     viewCount: 156,
     favoriteCount: 5,
-    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
     updatedAt: new Date(),
+    isPremium: true,
   },
   {
     id: '4',
-    title: 'Sony PlayStation 5',
-    description: 'Brand new, sealed',
-    price: 900,
-    currency: '₼',
-    images: ['/placeholder-product.jpg'],
-    category: mockCategories[0],
-    location: { id: '4', city: 'Baku', region: 'Khatai', country: 'Azerbaijan' },
+    title: 'Notbuk HP Pavilion 15',
+    description: 'Yaxşı işlək vəziyyətdə',
+    price: 850,
+    currency: 'AZN',
+    images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuC8JX-Wao7OLKuvCZFXsIapctamRohJ8FZGiDhj2BswcGcgsxVptoQbi52UmNGJbmayFjQZmLHGpskz-xfPDyB_oVwuMPAnWyaKHa0RW7QgNE1r5rKPa0i0XrX-fy2oEjjyJE2eR3aU50SICmSxnY_klImOXT2cA4FuClK4-5pKCaYcB3LLLsRSXKUfc1-d4Q6TAgmvXbDsYve0m8B1IOvulhxa_AD9SUFpZ5o-KVkh8pQYnHCQAttW-zhVHp5ChttAZq3oidhL5JI'],
+    category: mockCategories[2],
+    location: { id: '4', city: 'Bakı', region: 'Bakı', country: 'Azerbaijan' },
     seller: { id: '4', name: 'Sarah Williams', email: 'sarah@example.com', createdAt: new Date(), isVerified: true },
-    condition: 'new',
+    condition: 'used',
     status: 'active',
     viewCount: 342,
     favoriteCount: 23,
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
+    updatedAt: new Date(),
+    isPromoted: true,
+    store: { id: '2', name: 'TechShop', isVerified: true },
+  },
+  {
+    id: '5',
+    title: 'Kirayə 3 otaqlı mənzil',
+    description: 'Təmirli, rahat mənzil',
+    price: 600,
+    currency: 'AZN / aylıq',
+    images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuC8JX-Wao7OLKuvCZFXsIapctamRohJ8FZGiDhj2BswcGcgsxVptoQbi52UmNGJbmayFjQZmLHGpskz-xfPDyB_oVwuMPAnWyaKHa0RW7QgNE1r5rKPa0i0XrX-fy2oEjjyJE2eR3aU50SICmSxnY_klImOXT2cA4FuClK4-5pKCaYcB3LLLsRSXKUfc1-d4Q6TAgmvXbDsYve0m8B1IOvulhxa_AD9SUFpZ5o-KVkh8pQYnHCQAttW-zhVHp5ChttAZq3oidhL5JI'],
+    category: mockCategories[1],
+    location: { id: '5', city: 'Bakı', region: 'Bakı', country: 'Azerbaijan' },
+    seller: { id: '5', name: 'Ali Məmmədov', email: 'ali@example.com', createdAt: new Date(), isVerified: true },
+    condition: 'used',
+    status: 'active',
+    viewCount: 123,
+    favoriteCount: 7,
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+    updatedAt: new Date(),
+    isPremium: true,
+  },
+  {
+    id: '6',
+    title: 'Nike Air Jordan 1 Retro',
+    description: 'Orijinal, yeni',
+    price: 150,
+    currency: 'AZN',
+    images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuC8JX-Wao7OLKuvCZFXsIapctamRohJ8FZGiDhj2BswcGcgsxVptoQbi52UmNGJbmayFjQZmLHGpskz-xfPDyB_oVwuMPAnWyaKHa0RW7QgNE1r5rKPa0i0XrX-fy2oEjjyJE2eR3aU50SICmSxnY_klImOXT2cA4FuClK4-5pKCaYcB3LLLsRSXKUfc1-d4Q6TAgmvXbDsYve0m8B1IOvulhxa_AD9SUFpZ5o-KVkh8pQYnHCQAttW-zhVHp5ChttAZq3oidhL5JI'],
+    category: mockCategories[4],
+    location: { id: '6', city: 'Bakı', region: 'Bakı', country: 'Azerbaijan' },
+    seller: { id: '6', name: 'Rəşad İsmayılov', email: 'rashad@example.com', createdAt: new Date(), isVerified: false },
+    condition: 'new',
+    status: 'active',
+    viewCount: 89,
+    favoriteCount: 3,
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+    updatedAt: new Date(),
+    isPromoted: true,
+  },
+  {
+    id: '7',
+    title: 'Yataq dəsti',
+    description: 'Keyfiyyətli materialdan',
+    price: 450,
+    currency: 'AZN',
+    images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuC8JX-Wao7OLKuvCZFXsIapctamRohJ8FZGiDhj2BswcGcgsxVptoQbi52UmNGJbmayFjQZmLHGpskz-xfPDyB_oVwuMPAnWyaKHa0RW7QgNE1r5rKPa0i0XrX-fy2oEjjyJE2eR3aU50SICmSxnY_klImOXT2cA4FuClK4-5pKCaYcB3LLLsRSXKUfc1-d4Q6TAgmvXbDsYve0m8B1IOvulhxa_AD9SUFpZ5o-KVkh8pQYnHCQAttW-zhVHp5ChttAZq3oidhL5JI'],
+    category: mockCategories[9],
+    location: { id: '7', city: 'Sumqayıt', region: 'Sumqayıt', country: 'Azerbaijan' },
+    seller: { id: '7', name: 'Səbinə Əliyeva', email: 'sabina@example.com', createdAt: new Date(), isVerified: true },
+    condition: 'new',
+    status: 'active',
+    viewCount: 67,
+    favoriteCount: 4,
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+    updatedAt: new Date(),
+    isPremium: true,
+    store: { id: '3', name: 'Mebel Evi', isVerified: true },
+  },
+  {
+    id: '8',
+    title: 'Apple Macbook Pro 13"',
+    description: 'M1 çip, ideal vəziyyət',
+    price: 1800,
+    currency: 'AZN',
+    images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuC8JX-Wao7OLKuvCZFXsIapctamRohJ8FZGiDhj2BswcGcgsxVptoQbi52UmNGJbmayFjQZmLHGpskz-xfPDyB_oVwuMPAnWyaKHa0RW7QgNE1r5rKPa0i0XrX-fy2oEjjyJE2eR3aU50SICmSxnY_klImOXT2cA4FuClK4-5pKCaYcB3LLLsRSXKUfc1-d4Q6TAgmvXbDsYve0m8B1IOvulhxa_AD9SUFpZ5o-KVkh8pQYnHCQAttW-zhVHp5ChttAZq3oidhL5JI'],
+    category: mockCategories[2],
+    location: { id: '8', city: 'Bakı', region: 'Bakı', country: 'Azerbaijan' },
+    seller: { id: '8', name: 'Elvin Hüseynov', email: 'elvin@example.com', createdAt: new Date(), isVerified: true },
+    condition: 'used',
+    status: 'active',
+    viewCount: 234,
+    favoriteCount: 15,
+    createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
+    updatedAt: new Date(),
+    isPromoted: true,
+  },
+  {
+    id: '9',
+    title: 'Adidas Superstar',
+    description: 'Orijinal, az işlənmiş',
+    price: 220,
+    currency: 'AZN',
+    images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuC8JX-Wao7OLKuvCZFXsIapctamRohJ8FZGiDhj2BswcGcgsxVptoQbi52UmNGJbmayFjQZmLHGpskz-xfPDyB_oVwuMPAnWyaKHa0RW7QgNE1r5rKPa0i0XrX-fy2oEjjyJE2eR3aU50SICmSxnY_klImOXT2cA4FuClK4-5pKCaYcB3LLLsRSXKUfc1-d4Q6TAgmvXbDsYve0m8B1IOvulhxa_AD9SUFpZ5o-KVkh8pQYnHCQAttW-zhVHp5ChttAZq3oidhL5JI'],
+    category: mockCategories[4],
+    location: { id: '9', city: 'Gəncə', region: 'Gəncə', country: 'Azerbaijan' },
+    seller: { id: '9', name: 'Nigar Əhmədova', email: 'nigar@example.com', createdAt: new Date(), isVerified: false },
+    condition: 'used',
+    status: 'active',
+    viewCount: 45,
+    favoriteCount: 2,
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+    updatedAt: new Date(),
+    isPremium: true,
+  },
+  {
+    id: '10',
+    title: 'Divan və 2 kreslo',
+    description: 'Təmiz, rahat',
+    price: 350,
+    currency: 'AZN',
+    images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuC8JX-Wao7OLKuvCZFXsIapctamRohJ8FZGiDhj2BswcGcgsxVptoQbi52UmNGJbmayFjQZmLHGpskz-xfPDyB_oVwuMPAnWyaKHa0RW7QgNE1r5rKPa0i0XrX-fy2oEjjyJE2eR3aU50SICmSxnY_klImOXT2cA4FuClK4-5pKCaYcB3LLLsRSXKUfc1-d4Q6TAgmvXbDsYve0m8B1IOvulhxa_AD9SUFpZ5o-KVkh8pQYnHCQAttW-zhVHp5ChttAZq3oidhL5JI'],
+    category: mockCategories[9],
+    location: { id: '10', city: 'Bakı', region: 'Bakı', country: 'Azerbaijan' },
+    seller: { id: '10', name: 'Ramil Qasımov', email: 'ramil@example.com', createdAt: new Date(), isVerified: true },
+    condition: 'used',
+    status: 'active',
+    viewCount: 78,
+    favoriteCount: 5,
+    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
     updatedAt: new Date(),
     isPromoted: true,
   },
@@ -92,70 +206,12 @@ const mockProducts: Product[] = [
 
 export default function Home() {
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary to-primary-dark text-white py-16">
-        <Container>
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Buy & Sell Anything
-            </h1>
-            <p className="text-lg md:text-xl mb-8 text-blue-100">
-              The largest marketplace for second-hand items in Azerbaijan
-            </p>
-            <div className="max-w-2xl mx-auto">
-              <SearchBar />
-            </div>
-          </div>
-        </Container>
-      </section>
-
+    <main>
       {/* Categories Section */}
-      <section className="py-12 bg-gray-50">
-        <Container>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Browse Categories</h2>
-          </div>
-          <CategoryGrid categories={mockCategories} />
-        </Container>
-      </section>
+      <CategoryGrid categories={mockCategories} />
 
-      {/* Featured Products */}
-      <section className="py-12">
-        <Container>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Featured Listings</h2>
-            <Link href={ROUTES.LISTINGS}>
-              <Button variant="outline" size="sm">
-                View All
-              </Button>
-            </Link>
-          </div>
-          <ProductGrid products={mockProducts} />
-        </Container>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 bg-muted">
-        <Container>
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Ready to Sell?
-            </h2>
-            <p className="text-lg text-gray-600 mb-8">
-              Post your ad for free and reach thousands of potential buyers
-            </p>
-            <Link href={ROUTES.CREATE_LISTING}>
-              <Button size="lg">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Post Your Ad Now
-              </Button>
-            </Link>
-          </div>
-        </Container>
-      </section>
-    </div>
+      {/* Premium Products */}
+      <ProductGrid products={mockProducts} title="Premium Elanlar" />
+    </main>
   );
 }
