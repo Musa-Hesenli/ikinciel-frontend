@@ -206,12 +206,42 @@ const mockProducts: Product[] = [
 
 export default function Home() {
   return (
-    <main>
-      {/* Categories Section */}
-      <CategoryGrid categories={mockCategories} />
+    <main className="bg-gray-50">
+      <div className="container mx-auto">
+        <div className="flex gap-4 lg:gap-6">
+          {/* Left Banner */}
+          <aside className="hidden xl:block w-48 2xl:w-64 flex-shrink-0">
+            <div className="sticky top-4 pt-4">
+              <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-6 h-[600px] flex items-center justify-center border border-purple-200">
+                <p className="text-sm text-gray-500 text-center">Reklam sahəsi</p>
+              </div>
+            </div>
+          </aside>
 
-      {/* Premium Products */}
-      <ProductGrid products={mockProducts} title="Premium Elanlar" />
+          {/* Main Content */}
+          <div className="flex-1 min-w-0">
+            {/* Categories Section */}
+            <CategoryGrid categories={mockCategories} />
+
+            {/* Premium Products */}
+            <ProductGrid
+              products={mockProducts}
+              title="Premium Elanlar"
+              description="Ən yaxşı və seçilmiş elanları kəşf edin"
+              viewAllLink="/listings?premium=true"
+            />
+          </div>
+
+          {/* Right Banner */}
+          <aside className="hidden xl:block w-48 2xl:w-64 flex-shrink-0">
+            <div className="sticky top-4 pt-4">
+              <div className="bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl p-6 h-[600px] flex items-center justify-center border border-blue-200">
+                <p className="text-sm text-gray-500 text-center">Reklam sahəsi</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
     </main>
   );
 }

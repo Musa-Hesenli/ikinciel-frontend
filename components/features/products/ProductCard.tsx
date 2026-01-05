@@ -11,8 +11,8 @@ export default function ProductCard({ product }: ProductCardProps) {
   const mainImage = product.images[0] || '/placeholder-product.jpg';
 
   return (
-    <Link href={ROUTES.PRODUCT(product.id)}>
-      <div className="flex flex-col gap-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden group">
+    <Link href={ROUTES.PRODUCT(product.id)} className="h-full">
+      <div className="flex flex-col h-full bg-white rounded-xl shadow-sm overflow-hidden group">
         <div className="relative">
           <div
             className="aspect-[4/3] bg-cover bg-center"
@@ -42,16 +42,16 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-        <div className="flex flex-col gap-3 px-4 pb-4">
-          <p className="text-lg font-bold text-gray-900 dark:text-white">
+        <div className="flex flex-col px-3 sm:px-4 pt-3 sm:pt-4 pb-3 sm:pb-4 flex-1">
+          <p className="text-base sm:text-lg font-bold text-gray-900 mb-1">
             {formatPrice(product.price, product.currency)}
           </p>
-          <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-primary dark:group-hover:text-primary transition-colors">
+          <h3 className="text-sm sm:text-base font-medium text-gray-900 group-hover:text-primary transition-colors line-clamp-2 mb-2 sm:mb-3">
             {product.title}
           </h3>
-          <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
-            <span>{product.location.city}</span>
-            <span>{formatRelativeTime(product.createdAt)}</span>
+          <div className="flex justify-between text-xs sm:text-sm text-gray-500 mt-auto">
+            <span className="truncate">{product.location.city}</span>
+            <span className="ml-1 flex-shrink-0">{formatRelativeTime(product.createdAt)}</span>
           </div>
         </div>
       </div>

@@ -1,7 +1,17 @@
+'use client';
+
 import Image from 'next/image';
-import { Container } from '@/components/layout';
-import { Button, Badge, Card, CardBody } from '@/components/ui';
+import { useState } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Thumbs, FreeMode } from 'swiper/modules';
+import type { Swiper as SwiperType } from 'swiper';
 import { formatPrice, formatRelativeTime } from '@/lib/utils';
+
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/thumbs';
+import 'swiper/css/free-mode';
 
 // Mock product data - in real app, fetch from API
 const mockProduct = {
@@ -10,7 +20,13 @@ const mockProduct = {
   description: 'Great condition iPhone 13 Pro Max with 256GB storage. Barely used, always kept in a case. Includes original box, charger, and cable. Battery health at 98%. No scratches or dents. Unlocked and ready for any carrier.',
   price: 1500,
   currency: '₼',
-  images: ['/placeholder-product.jpg', '/placeholder-product.jpg', '/placeholder-product.jpg'],
+  images: [
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuCpNALD7ss1o2G_YcVp1G3jzMNWDlVJdPGSIgRsasgNRaTHCh4ZkovaEZ1x1dkFPMnbA7UHesbHqdX0Q2tIHuiR5JGBEcp22Dg9IFBIyj3Qyk-hOARpBjuuSxtbPMEeyhiqt66wSSk1uoWYd7L_EsuiyctDuyGle7E3a3Ch5GF0kz-H9fOSfK9cd0gvLNTP9kCqI92do_ZKMdO3Gi8C4pX8Gm-m6qeYHOeAxRi_T-hIw7Ifm1r-CWfk2RsNC-S7O1HRZQa6lG5FY3k',
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuCpNALD7ss1o2G_YcVp1G3jzMNWDlVJdPGSIgRsasgNRaTHCh4ZkovaEZ1x1dkFPMnbA7UHesbHqdX0Q2tIHuiR5JGBEcp22Dg9IFBIyj3Qyk-hOARpBjuuSxtbPMEeyhiqt66wSSk1uoWYd7L_EsuiyctDuyGle7E3a3Ch5GF0kz-H9fOSfK9cd0gvLNTP9kCqI92do_ZKMdO3Gi8C4pX8Gm-m6qeYHOeAxRi_T-hIw7Ifm1r-CWfk2RsNC-S7O1HRZQa6lG5FY3k',
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuCpNALD7ss1o2G_YcVp1G3jzMNWDlVJdPGSIgRsasgNRaTHCh4ZkovaEZ1x1dkFPMnbA7UHesbHqdX0Q2tIHuiR5JGBEcp22Dg9IFBIyj3Qyk-hOARpBjuuSxtbPMEeyhiqt66wSSk1uoWYd7L_EsuiyctDuyGle7E3a3Ch5GF0kz-H9fOSfK9cd0gvLNTP9kCqI92do_ZKMdO3Gi8C4pX8Gm-m6qeYHOeAxRi_T-hIw7Ifm1r-CWfk2RsNC-S7O1HRZQa6lG5FY3k',
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuCpNALD7ss1o2G_YcVp1G3jzMNWDlVJdPGSIgRsasgNRaTHCh4ZkovaEZ1x1dkFPMnbA7UHesbHqdX0Q2tIHuiR5JGBEcp22Dg9IFBIyj3Qyk-hOARpBjuuSxtbPMEeyhiqt66wSSk1uoWYd7L_EsuiyctDuyGle7E3a3Ch5GF0kz-H9fOSfK9cd0gvLNTP9kCqI92do_ZKMdO3Gi8C4pX8Gm-m6qeYHOeAxRi_T-hIw7Ifm1r-CWfk2RsNC-S7O1HRZQa6lG5FY3k',
+    'https://images.ft.com/v3/image/raw/ftcms%3A2aa4edd5-0ed9-4627-8178-1e392eb9501e?source=next-article&fit=scale-down&quality=highest&width=1440&dpr=1'
+  ],
   category: { id: '1', name: 'Electronics', slug: 'electronics' },
   location: { id: '1', city: 'Baku', region: 'Nasimi', country: 'Azerbaijan' },
   seller: {
@@ -35,143 +51,180 @@ const mockProduct = {
 };
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
+  const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null);
+
   return (
-    <div className="py-8 bg-gray-50 min-h-screen">
-      <Container>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <main className="w-full flex justify-center py-5 sm:py-10 px-4 bg-white min-h-screen">
+      <div className="container mx-auto">
+        <div className="flex flex-col gap-6">
+          {/* Breadcrumb */}
+          <div>
+            <div className="flex flex-wrap gap-2">
+              <a className="text-gray-500 text-sm font-medium leading-normal" href="/">Ana Səhifə</a>
+              <span className="text-gray-500 text-sm font-medium leading-normal">/</span>
+              <a className="text-gray-500 text-sm font-medium leading-normal" href="#">{mockProduct.category.name}</a>
+              <span className="text-gray-500 text-sm font-medium leading-normal">/</span>
+              <span className="text-gray-900 text-sm font-medium leading-normal">{mockProduct.title}</span>
+            </div>
+          </div>
+
+          {/* Title */}
+          <div className="flex flex-wrap justify-between gap-3">
+            <div className="flex min-w-72 flex-col gap-3">
+              <h1 className="text-gray-900 text-4xl font-black leading-tight tracking-[-0.033em]">{mockProduct.title}</h1>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Images */}
-          <div className="lg:col-span-2">
-            <Card>
-              <div className="aspect-[4/3] relative bg-gray-100">
-                <Image
-                  src={mockProduct.images[0]}
-                  alt={mockProduct.title}
-                  fill
-                  className="object-cover"
-                />
+          <div className="lg:col-span-2 space-y-8">
+            {/* Image Gallery */}
+            <div className="space-y-4">
+              {/* Main Swiper */}
+              <div className="relative w-full aspect-[16/9] bg-white rounded-xl overflow-hidden shadow-sm">
+                <Swiper
+                  modules={[Navigation, Pagination, Thumbs]}
+                  navigation={{
+                    prevEl: '.swiper-button-prev-custom',
+                    nextEl: '.swiper-button-next-custom',
+                  }}
+                  thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+                  pagination={{ clickable: true }}
+                  className="h-full w-full"
+                  loop={true}
+                  spaceBetween={0}
+                >
+                  {mockProduct.images.map((img, idx) => (
+                    <SwiperSlide key={idx}>
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={img}
+                          alt={`${mockProduct.title} - Image ${idx + 1}`}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+
+                {/* Custom Navigation Arrows */}
+                <button className="swiper-button-prev-custom absolute top-1/2 left-4 -translate-y-1/2 z-10 bg-black/30 text-white rounded-full size-10 flex items-center justify-center hover:bg-black/50 transition-colors">
+                  <span className="material-symbols-outlined">chevron_left</span>
+                </button>
+                <button className="swiper-button-next-custom absolute top-1/2 right-4 -translate-y-1/2 z-10 bg-black/30 text-white rounded-full size-10 flex items-center justify-center hover:bg-black/50 transition-colors">
+                  <span className="material-symbols-outlined">chevron_right</span>
+                </button>
               </div>
-              <div className="p-4 grid grid-cols-4 gap-2">
+
+              {/* Thumbnail Swiper */}
+              <Swiper
+                onSwiper={setThumbsSwiper}
+                modules={[FreeMode, Thumbs]}
+                spaceBetween={10}
+                slidesPerView={4}
+                freeMode={true}
+                watchSlidesProgress={true}
+                className="thumbs-swiper"
+              >
                 {mockProduct.images.map((img, idx) => (
-                  <div key={idx} className="aspect-square relative bg-gray-100 rounded cursor-pointer hover:opacity-75 transition">
-                    <Image
-                      src={img}
-                      alt={`${mockProduct.title} ${idx + 1}`}
-                      fill
-                      className="object-cover rounded"
-                    />
-                  </div>
+                  <SwiperSlide key={idx}>
+                    <div className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-primary transition-all">
+                      <Image
+                        src={img}
+                        alt={`Thumbnail ${idx + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  </SwiperSlide>
                 ))}
+              </Swiper>
+            </div>
+
+            {/* Product Specifications */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6 bg-white rounded-xl shadow-sm">
+              <div className="flex flex-col gap-1">
+                <p className="text-gray-500 text-sm">Şəhər</p>
+                <p className="text-gray-900 font-bold">{mockProduct.location.city}</p>
               </div>
-            </Card>
+              <div className="flex flex-col gap-1">
+                <p className="text-gray-500 text-sm">Vəziyyət</p>
+                <p className="text-gray-900 font-bold capitalize">{mockProduct.condition === 'used' ? 'İşlənmiş' : 'Yeni'}</p>
+              </div>
+              <div className="flex flex-col gap-1">
+                <p className="text-gray-500 text-sm">Kateqoriya</p>
+                <p className="text-gray-900 font-bold">{mockProduct.category.name}</p>
+              </div>
+              <div className="flex flex-col gap-1">
+                <p className="text-gray-500 text-sm">Baxış sayı</p>
+                <p className="text-gray-900 font-bold">{mockProduct.viewCount}</p>
+              </div>
+            </div>
 
             {/* Description */}
-            <Card className="mt-6">
-              <CardBody>
-                <h2 className="text-xl font-semibold mb-4">Description</h2>
-                <p className="text-gray-700 whitespace-pre-line">{mockProduct.description}</p>
-              </CardBody>
-            </Card>
-
-            {/* Features */}
-            {mockProduct.features && (
-              <Card className="mt-6">
-                <CardBody>
-                  <h2 className="text-xl font-semibold mb-4">Details</h2>
-                  <dl className="space-y-2">
-                    {Object.entries(mockProduct.features).map(([key, value]) => (
-                      <div key={key} className="flex justify-between py-2 border-b border-gray-100 last:border-0">
-                        <dt className="text-gray-600">{key}</dt>
-                        <dd className="font-medium text-gray-900">{String(value)}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </CardBody>
-              </Card>
-            )}
+            <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+              <p className="text-gray-900 text-base leading-relaxed whitespace-pre-line">
+                {mockProduct.description}
+              </p>
+              <div className="flex items-center gap-4 text-sm text-gray-500 pt-4 border-t border-gray-200">
+                <span>Elan №: {mockProduct.id}</span>
+                <span>Baxış sayı: {mockProduct.viewCount}</span>
+                <span>Yeniləndi: {formatRelativeTime(mockProduct.updatedAt)}</span>
+              </div>
+            </div>
           </div>
 
           {/* Right Column - Product Info & Seller */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-20">
-              <CardBody>
-                <h1 className="text-2xl font-bold text-gray-900 mb-4">
-                  {mockProduct.title}
-                </h1>
-
-                <div className="flex items-baseline justify-between mb-4">
-                  <p className="text-3xl font-bold text-primary">
-                    {formatPrice(mockProduct.price, mockProduct.currency)}
-                  </p>
-                  <Badge variant="default">{mockProduct.condition}</Badge>
+            <div className="sticky top-10 bg-white rounded-xl shadow-sm p-6 space-y-6">
+              {/* Price and Actions */}
+              <div className="flex items-center justify-between">
+                <h3 className="text-3xl font-bold text-primary">
+                  {formatPrice(mockProduct.price, mockProduct.currency)}
+                </h3>
+                <div className="flex gap-2">
+                  <button className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg size-10 bg-gray-100 text-gray-900 hover:bg-gray-200 transition-colors">
+                    <span className="material-symbols-outlined">favorite</span>
+                  </button>
+                  <button className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg size-10 bg-gray-100 text-gray-900 hover:bg-gray-200 transition-colors">
+                    <span className="material-symbols-outlined">flag</span>
+                  </button>
                 </div>
+              </div>
 
-                <div className="space-y-3 mb-6 pb-6 border-b border-gray-200">
-                  <div className="flex items-center text-gray-600">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    </svg>
-                    {mockProduct.location.city}, {mockProduct.location.region}
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {formatRelativeTime(mockProduct.createdAt)}
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                    {mockProduct.viewCount} views
-                  </div>
-                </div>
+              <div className="border-t border-gray-200"></div>
 
-                {/* Seller Info */}
-                <div className="mb-6">
-                  <h3 className="font-semibold mb-3">Seller</h3>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                      <span className="text-lg font-semibold text-primary">
-                        {mockProduct.seller.name.charAt(0)}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="flex items-center">
-                        <p className="font-medium">{mockProduct.seller.name}</p>
-                        {mockProduct.seller.isVerified && (
-                          <svg className="w-4 h-4 ml-1 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-500">
-                        Member since {formatRelativeTime(mockProduct.seller.createdAt)}
-                      </p>
-                    </div>
-                  </div>
+              {/* Seller Info */}
+              <div className="flex items-center gap-4">
+                <div className="bg-primary/10 rounded-full size-14 flex items-center justify-center">
+                  <span className="text-lg font-semibold text-primary">
+                    {mockProduct.seller.name.charAt(0)}
+                  </span>
                 </div>
+                <div>
+                  <p className="text-gray-900 font-bold text-lg">{mockProduct.seller.name}</p>
+                  <p className="text-sm text-gray-500">Şəxsi</p>
+                </div>
+              </div>
 
-                {/* Action Buttons */}
-                <div className="space-y-2">
-                  <Button className="w-full" size="lg">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                    </svg>
-                    Contact Seller
-                  </Button>
-                  <Button variant="outline" className="w-full">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                    Save to Favorites
-                  </Button>
+              {/* Contact Options */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-4 bg-gray-100 rounded-lg">
+                  <span className="material-symbols-outlined text-primary">call</span>
+                  <span className="text-gray-900 font-semibold text-lg">{mockProduct.seller.phone?.replace(/(\d{3})(\d{3})(\d{2})(\d{2})/, '($1) $2-**-**') || '(050) 555-**-**'}</span>
+                  <a className="ml-auto text-primary text-sm font-bold cursor-pointer">Göstər</a>
                 </div>
-              </CardBody>
-            </Card>
+                <button className="w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] gap-2 hover:bg-primary-dark transition-colors">
+                  <span className="material-symbols-outlined">chat</span>
+                  <span className="truncate">Mesaj yaz</span>
+                </button>
+              </div>
+            </div>
+          </div>
           </div>
         </div>
-      </Container>
-    </div>
+      </div>
+    </main>
   );
 }

@@ -7,12 +7,26 @@ interface CategoryGridProps {
 
 export default function CategoryGrid({ categories }: CategoryGridProps) {
   return (
-    <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-      <div className="container mx-auto px-4 sm:px-10 py-5">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-5">
-          {categories.map((category) => (
-            <CategoryCard key={category.id} category={category} />
-          ))}
+    <div className="bg-gray-50 border-b border-gray-200">
+      <div className="py-4">
+        {/* Mobile: Horizontal scroll */}
+        <div className="md:hidden overflow-x-auto scrollbar-hide px-4">
+          <div className="flex gap-4 pb-2">
+            {categories.map((category) => (
+              <div key={category.id} className="min-w-[70px]">
+                <CategoryCard category={category} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop: Grid */}
+        <div className="hidden md:block">
+          <div className="grid grid-cols-6 gap-4">
+            {categories.map((category) => (
+              <CategoryCard key={category.id} category={category} />
+            ))}
+          </div>
         </div>
       </div>
     </div>
