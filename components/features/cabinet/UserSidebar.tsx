@@ -34,7 +34,7 @@ export default function UserSidebar() {
 
   return (
     <aside className="w-full lg:w-64 flex-shrink-0">
-      <div className="flex h-full flex-col justify-between rounded-xl bg-surface-light dark:bg-surface-dark p-4 border border-border-light dark:border-border-dark">
+      <div className="flex h-full flex-col justify-between rounded-xl bg-white shadow-sm border border-gray-200 p-6">
         <div className="flex flex-col gap-4">
           {/* User Info */}
           <div className="flex items-center gap-3">
@@ -45,10 +45,10 @@ export default function UserSidebar() {
               aria-label={user.name}
             />
             <div className="flex flex-col">
-              <h1 className="text-text-light-primary dark:text-text-dark-primary text-base font-medium leading-normal">
+              <h1 className="text-gray-900 text-base font-medium leading-normal">
                 {user.name}
               </h1>
-              <p className="text-text-light-secondary dark:text-text-dark-secondary text-sm font-normal leading-normal">
+              <p className="text-gray-500 text-sm font-normal leading-normal">
                 {user.email}
               </p>
             </div>
@@ -65,13 +65,13 @@ export default function UserSidebar() {
                   href={item.href}
                   className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-primary/10 dark:bg-primary/20'
-                      : 'hover:bg-primary/10 dark:hover:bg-primary/20'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-gray-900 hover:bg-gray-50'
                   }`}
                 >
                   <span
                     className={`material-symbols-outlined ${
-                      isActive ? 'text-primary' : 'text-text-light-primary dark:text-text-dark-primary'
+                      isActive ? 'text-primary' : 'text-gray-600'
                     }`}
                     style={item.filled && isActive ? { fontVariationSettings: "'FILL' 1, 'wght' 400" } : undefined}
                   >
@@ -80,7 +80,7 @@ export default function UserSidebar() {
                   <p className={`text-sm leading-normal ${
                     isActive
                       ? 'text-primary font-bold'
-                      : 'text-text-light-primary dark:text-text-dark-primary font-medium'
+                      : 'text-gray-900 font-medium'
                   }`}>
                     {item.label}
                   </p>
@@ -91,15 +91,15 @@ export default function UserSidebar() {
         </div>
 
         {/* Logout */}
-        <div className="flex flex-col gap-1 mt-8 pt-4 border-t border-border-light dark:border-border-dark">
+        <div className="flex flex-col gap-1 mt-8 pt-4 border-t border-gray-200">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors w-full text-left"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors w-full text-left"
           >
-            <span className="material-symbols-outlined text-text-light-primary dark:text-text-dark-primary">
+            <span className="material-symbols-outlined text-gray-600">
               logout
             </span>
-            <p className="text-text-light-primary dark:text-text-dark-primary text-sm font-medium leading-normal">
+            <p className="text-gray-900 text-sm font-medium leading-normal">
               Çıxış
             </p>
           </button>

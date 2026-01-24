@@ -63,28 +63,27 @@ export default function SettingsPage() {
   ];
 
   return (
-    <main className="w-full mx-auto p-4 md:p-8 lg:p-10 max-w-7xl">
-      <div className="flex flex-col lg:flex-row gap-8">
-        <UserSidebar />
+    <main className="bg-gray-50 min-h-screen">
+      <div className="container mx-auto py-5 sm:py-10 px-4">
+        <div className="flex flex-col lg:flex-row gap-6">
+          <UserSidebar />
 
-        <div className="flex-1">
-          <div className="bg-surface-light dark:bg-surface-dark p-4 md:p-6 rounded-xl border border-border-light dark:border-border-dark">
-            {/* Page Heading */}
-            <div className="flex flex-wrap justify-between gap-3 p-4 border-b border-border-light dark:border-border-dark">
-              <div className="flex min-w-72 flex-col gap-2">
-                <p className="text-text-light-primary dark:text-text-dark-primary text-3xl font-black leading-tight tracking-[-0.033em]">
+          <div className="flex-1">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              {/* Page Heading */}
+              <div className="mb-6 pb-6 border-b border-gray-200">
+                <h1 className="text-gray-900 text-3xl sm:text-4xl font-black leading-tight tracking-[-0.033em] mb-2">
                   Parametrlər
-                </p>
-                <p className="text-text-light-secondary dark:text-text-dark-secondary text-base font-normal leading-normal">
+                </h1>
+                <p className="text-gray-500 text-base font-normal leading-normal">
                   Hesab məlumatlarınızı və parametrlərinizi idarə edin
                 </p>
               </div>
-            </div>
 
-            <form onSubmit={handleSubmit} className="p-4 space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
               {/* Profile Section */}
               <div>
-                <h3 className="text-text-light-primary dark:text-text-dark-primary text-xl font-bold mb-4">
+                <h3 className="text-gray-900 text-xl font-bold mb-4">
                   Profil Məlumatları
                 </h3>
 
@@ -102,7 +101,7 @@ export default function SettingsPage() {
                       >
                         Şəkil yüklə
                       </button>
-                      <p className="text-text-light-secondary dark:text-text-dark-secondary text-xs mt-2">
+                      <p className="text-gray-500 text-xs mt-2">
                         JPG, PNG və ya GIF (maks. 5MB)
                       </p>
                     </div>
@@ -110,7 +109,7 @@ export default function SettingsPage() {
 
                   {/* Name */}
                   <div>
-                    <label className="block text-text-light-primary dark:text-text-dark-primary text-sm font-semibold mb-2">
+                    <label className="block text-gray-900 text-sm font-semibold mb-2">
                       Ad Soyad
                     </label>
                     <Input
@@ -122,7 +121,7 @@ export default function SettingsPage() {
 
                   {/* Email */}
                   <div>
-                    <label className="block text-text-light-primary dark:text-text-dark-primary text-sm font-semibold mb-2">
+                    <label className="block text-gray-900 text-sm font-semibold mb-2">
                       E-poçt
                     </label>
                     <Input
@@ -135,7 +134,7 @@ export default function SettingsPage() {
 
                   {/* Phone */}
                   <div>
-                    <label className="block text-text-light-primary dark:text-text-dark-primary text-sm font-semibold mb-2">
+                    <label className="block text-gray-900 text-sm font-semibold mb-2">
                       Telefon
                     </label>
                     <Input
@@ -148,19 +147,20 @@ export default function SettingsPage() {
 
                   {/* City */}
                   <div>
-                    <label className="block text-text-light-primary dark:text-text-dark-primary text-sm font-semibold mb-2">
+                    <label className="block text-gray-900 text-sm font-semibold mb-2">
                       Şəhər
                     </label>
                     <Select
-                      value={formData.city}
-                      onChange={(e) => handleInputChange('city', e.target.value)}
+                      value={cityOptions.find(option => option.value === formData.city)}
+                      onChange={(option) => handleInputChange('city', option?.value || '')}
                       options={cityOptions}
+                      placeholder="Şəhər seçin"
                     />
                   </div>
 
                   {/* Bio */}
                   <div>
-                    <label className="block text-text-light-primary dark:text-text-dark-primary text-sm font-semibold mb-2">
+                    <label className="block text-gray-900 text-sm font-semibold mb-2">
                       Haqqımda
                     </label>
                     <Textarea
@@ -174,18 +174,18 @@ export default function SettingsPage() {
               </div>
 
               {/* Notifications Section */}
-              <div className="pt-6 border-t border-border-light dark:border-border-dark">
-                <h3 className="text-text-light-primary dark:text-text-dark-primary text-xl font-bold mb-4">
+              <div className="pt-6 border-t border-gray-200">
+                <h3 className="text-gray-900 text-xl font-bold mb-4">
                   Bildirişlər
                 </h3>
 
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-background-light dark:bg-background-dark">
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50">
                     <div>
-                      <p className="text-text-light-primary dark:text-text-dark-primary font-semibold">
+                      <p className="text-gray-900 font-semibold">
                         E-poçt bildirişləri
                       </p>
-                      <p className="text-text-light-secondary dark:text-text-dark-secondary text-sm">
+                      <p className="text-gray-500 text-sm">
                         Yeni mesajlar və elanlar haqqında e-poçt al
                       </p>
                     </div>
@@ -200,12 +200,12 @@ export default function SettingsPage() {
                     </label>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-background-light dark:bg-background-dark">
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50">
                     <div>
-                      <p className="text-text-light-primary dark:text-text-dark-primary font-semibold">
+                      <p className="text-gray-900 font-semibold">
                         SMS bildirişləri
                       </p>
-                      <p className="text-text-light-secondary dark:text-text-dark-secondary text-sm">
+                      <p className="text-gray-500 text-sm">
                         Vacib bildirişləri SMS vasitəsilə al
                       </p>
                     </div>
@@ -220,12 +220,12 @@ export default function SettingsPage() {
                     </label>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-background-light dark:bg-background-dark">
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50">
                     <div>
-                      <p className="text-text-light-primary dark:text-text-dark-primary font-semibold">
+                      <p className="text-gray-900 font-semibold">
                         Push bildirişləri
                       </p>
-                      <p className="text-text-light-secondary dark:text-text-dark-secondary text-sm">
+                      <p className="text-gray-500 text-sm">
                         Brauzerdə bildirişlər al
                       </p>
                     </div>
@@ -243,8 +243,8 @@ export default function SettingsPage() {
               </div>
 
               {/* Password Section */}
-              <div className="pt-6 border-t border-border-light dark:border-border-dark">
-                <h3 className="text-text-light-primary dark:text-text-dark-primary text-xl font-bold mb-4">
+              <div className="pt-6 border-t border-gray-200">
+                <h3 className="text-gray-900 text-xl font-bold mb-4">
                   Şifrə
                 </h3>
 
@@ -258,7 +258,7 @@ export default function SettingsPage() {
               </div>
 
               {/* Danger Zone */}
-              <div className="pt-6 border-t border-border-light dark:border-border-dark">
+              <div className="pt-6 border-t border-gray-200">
                 <h3 className="text-red-500 text-xl font-bold mb-4">
                   Təhlükə Zonası
                 </h3>
@@ -283,7 +283,7 @@ export default function SettingsPage() {
                 </button>
                 <button
                   type="button"
-                  className="bg-border-light dark:bg-border-dark text-text-light-primary dark:text-text-dark-primary rounded-lg px-6 py-3 font-semibold hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
+                  className="bg-white text-gray-900 border border-gray-300 rounded-lg px-6 py-3 font-semibold hover:bg-gray-50 transition-colors"
                 >
                   Ləğv et
                 </button>

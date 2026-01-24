@@ -84,3 +84,22 @@ export function debounce<T extends (...args: any[]) => any>(
     timeout = setTimeout(() => func(...args), wait);
   };
 }
+
+/**
+ * Get full image URL from relative path
+ */
+export function getImageUrl(imagePath: string | undefined | null): string {
+  if (!imagePath) return '';
+  
+  // If already a full URL, return as is
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  
+  // If relative path, prepend base URL
+  if (imagePath.startsWith('/')) {
+    return `https://ikinci.musahesenli.com${imagePath}`;
+  }
+  
+  return imagePath;
+}

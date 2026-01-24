@@ -16,8 +16,8 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    fullName: '',
+    phoneNumber: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -39,8 +39,8 @@ export default function RegisterPage() {
       await register({
         email: formData.email,
         password: formData.password,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
+        fullName: formData.fullName,
+        phoneNumber: formData.phoneNumber,
       });
 
       // Redirect to home page after successful registration
@@ -76,31 +76,29 @@ export default function RegisterPage() {
 
             {/* Registration Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Input
-                  label="Ad"
-                  type="text"
-                  placeholder="Adınızı daxil edin"
-                  value={formData.firstName}
-                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  disabled={isLoading}
-                  required
-                />
-
-                <Input
-                  label="Soyad"
-                  type="text"
-                  placeholder="Soyadınızı daxil edin"
-                  value={formData.lastName}
-                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  disabled={isLoading}
-                  required
-                />
-              </div>
+              <Input
+                label="Ad və Soyad"
+                type="text"
+                placeholder="Ad və soyadınızı daxil edin"
+                value={formData.fullName}
+                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                disabled={isLoading}
+                required
+              />
 
               <Input
-                label="E-poçt və ya telefon nömrəsi"
-                type="text"
+                label="Telefon nömrəsi"
+                type="tel"
+                placeholder="+994XX XXX XX XX"
+                value={formData.phoneNumber}
+                onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                disabled={isLoading}
+                required
+              />
+
+              <Input
+                label="E-poçt"
+                type="email"
                 placeholder="nümunə@email.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}

@@ -1,54 +1,129 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants';
 import Select, { SelectOption } from '@/components/ui/Select';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
-
-// Define options for selects
-const categoryOptions: SelectOption[] = [
-  { value: 'electronics', label: 'Elektronika' },
-  { value: 'vehicles', label: 'Nəqliyyat' },
-  { value: 'real-estate', label: 'Daşınmaz əmlak' },
-  { value: 'fashion', label: 'Geyim və aksesuarlar' },
-  { value: 'home', label: 'Ev və bağ' },
-  { value: 'sports', label: 'İdman və hobbi' },
-];
-
-const subcategoryOptions: SelectOption[] = [
-  { value: 'phones', label: 'Mobil telefonlar' },
-  { value: 'laptops', label: 'Noutbuklar' },
-  { value: 'cars', label: 'Avtomobillər' },
-];
+import { adService, CategoryResponse, AdType } from '@/services/ad.service';
 
 const cityOptions: SelectOption[] = [
-  { value: 'baku', label: 'Bakı' },
-  { value: 'ganja', label: 'Gəncə' },
-  { value: 'sumqayit', label: 'Sumqayıt' },
-  { value: 'mingachevir', label: 'Mingəçevir' },
-  { value: 'lankaran', label: 'Lənkəran' },
-  { value: 'shirvan', label: 'Şirvan' },
+  { value: '1', label: 'Bakı' },
+  { value: '2', label: 'Gəncə' },
+  { value: '3', label: 'Sumqayıt' },
+  { value: '4', label: 'Mingəçevir' },
+  { value: '5', label: 'Lənkəran' },
+  { value: '6', label: 'Şirvan' },
 ];
 
 export default function CreateListingPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
-    category: '',
-    subcategory: '',
+    categoryId: '',
+    subcategoryId: '',
+    adTypeId: '',
     title: '',
     description: '',
     price: '',
     name: '',
     email: '',
     phone: '',
-    city: '',
+    cityId: '',
+    isDeliverable: false,
+    isNew: false,
   });
+
+  const [parentCategories, setParentCategories] = useState<SelectOption[]>([]);
+  const [subCategories, setSubCategories] = useState<SelectOption[]>([]);
+  const [adTypes, setAdTypes] = useState<SelectOption[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+  const [isLoadingSubCategories, setIsLoadingSubCategories] = useState(false);
+  const [isLoadingAdTypes, setIsLoadingAdTypes] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showSubcategory, setShowSubcategory] = useState(false);
 
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch parent categories on mount
+  useEffect(() => {
+    const fetchParentCategories = async () => {
+      setIsLoadingCategories(true);
+      try {
+        const categories = await adService.getCategories();
+        const options: SelectOption[] = categories.map(cat => ({
+          value: cat.id.toString(),
+          label: cat.name,
+        }));
+        setParentCategories(options);
+      } catch (err: any) {
+        setError('Kateqoriyaları yükləmək mümkün olmadı');
+        console.error('Error fetching categories:', err);
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
+    fetchParentCategories();
+  }, []);
+
+  // Fetch ad types on mount
+  useEffect(() => {
+    const fetchAdTypes = async () => {
+      setIsLoadingAdTypes(true);
+      try {
+        const types = await adService.getAdTypes();
+        const options: SelectOption[] = types.map(type => ({
+          value: type.id.toString(),
+          label: type.name,
+        }));
+        setAdTypes(options);
+      } catch (err: any) {
+        setError('Elan növlərini yükləmək mümkün olmadı');
+        console.error('Error fetching ad types:', err);
+      } finally {
+        setIsLoadingAdTypes(false);
+      }
+    };
+
+    fetchAdTypes();
+  }, []);
+
+  // Fetch subcategories when parent category is selected
+  useEffect(() => {
+    if (formData.categoryId) {
+      const fetchSubCategories = async () => {
+        setIsLoadingSubCategories(true);
+        setShowSubcategory(true);
+        setSubCategories([]);
+        setFormData(prev => ({ ...prev, subcategoryId: '' }));
+        try {
+          const categories = await adService.getCategories(parseInt(formData.categoryId));
+          const options: SelectOption[] = categories.map(cat => ({
+            value: cat.id.toString(),
+            label: cat.name,
+          }));
+          setSubCategories(options);
+        } catch (err: any) {
+          setError('Alt kateqoriyaları yükləmək mümkün olmadı');
+          console.error('Error fetching subcategories:', err);
+        } finally {
+          setIsLoadingSubCategories(false);
+        }
+      };
+
+      fetchSubCategories();
+    } else {
+      setShowSubcategory(false);
+      setSubCategories([]);
+      setFormData(prev => ({ ...prev, subcategoryId: '' }));
+    }
+  }, [formData.categoryId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -101,11 +176,65 @@ export default function CreateListingPage() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement form submission logic
-    console.log('Form data:', formData);
-    console.log('Images:', images);
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      // Determine which category to use (subcategory if selected, otherwise parent)
+      const categoryId = formData.subcategoryId || formData.categoryId;
+
+      if (!categoryId) {
+        setError('Zəhmət olmasa kateqoriya seçin');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (images.length === 0) {
+        setError('Zəhmət olmasa ən azı bir şəkil yükləyin');
+        setIsSubmitting(false);
+        return;
+      }
+
+      await adService.createAd({
+        CityId: parseInt(formData.cityId),
+        Price: parseFloat(formData.price) || 0,
+        IsDeliverable: formData.isDeliverable,
+        IsNew: formData.isNew,
+        PhoneNumber: formData.phone,
+        AdTypeId: parseInt(formData.adTypeId),
+        Title: formData.title,
+        Images: images,
+        CategoryId: parseInt(categoryId),
+        FullName: formData.name,
+        Email: formData.email,
+        Description: formData.description,
+      });
+
+      // Redirect to home page on success
+      router.push(ROUTES.HOME);
+    } catch (err: any) {
+      let errorMessage = 'Elan yerləşdirilərkən xəta baş verdi';
+      
+      if (err.message) {
+        errorMessage = err.message;
+      } else if (err.data) {
+        // Handle different error response formats
+        if (typeof err.data === 'string') {
+          errorMessage = err.data;
+        } else if (err.data.message) {
+          errorMessage = err.data.message;
+        } else if (err.data.error) {
+          errorMessage = err.data.error;
+        }
+      }
+      
+      setError(errorMessage);
+      console.error('Error creating ad:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -136,31 +265,46 @@ export default function CreateListingPage() {
               {/* Category */}
               <Select
                 label="Kateqoriya"
-                options={categoryOptions}
-                value={categoryOptions.find(option => option.value === formData.category)}
-                onChange={(option) => setFormData(prev => ({ ...prev, category: option?.value || '' }))}
-                placeholder="Kateqoriya seçin"
+                options={parentCategories}
+                value={parentCategories.find(option => option.value === formData.categoryId)}
+                onChange={(option) => setFormData(prev => ({ ...prev, categoryId: option?.value || '' }))}
+                placeholder={isLoadingCategories ? 'Yüklənir...' : 'Kateqoriya seçin'}
                 isClearable
                 required
+                isLoading={isLoadingCategories}
               />
 
-              {/* Subcategory */}
+              {/* Subcategory - Hidden until parent category is selected */}
+              {showSubcategory && (
+                <Select
+                  label="Alt kateqoriya"
+                  options={subCategories}
+                  value={subCategories.find(option => option.value === formData.subcategoryId)}
+                  onChange={(option) => setFormData(prev => ({ ...prev, subcategoryId: option?.value || '' }))}
+                  placeholder={isLoadingSubCategories ? 'Yüklənir...' : 'Alt kateqoriya seçin'}
+                  isClearable
+                  isLoading={isLoadingSubCategories}
+                />
+              )}
+
+              {/* Ad Type */}
               <Select
-                label="Alt kateqoriya"
-                options={subcategoryOptions}
-                value={subcategoryOptions.find(option => option.value === formData.subcategory)}
-                onChange={(option) => setFormData(prev => ({ ...prev, subcategory: option?.value || '' }))}
-                placeholder="Alt kateqoriya seçin"
+                label="Elan növü"
+                options={adTypes}
+                value={adTypes.find(option => option.value === formData.adTypeId)}
+                onChange={(option) => setFormData(prev => ({ ...prev, adTypeId: option?.value || '' }))}
+                placeholder={isLoadingAdTypes ? 'Yüklənir...' : 'Elan növü seçin'}
                 isClearable
                 required
+                isLoading={isLoadingAdTypes}
               />
 
               {/* City */}
               <Select
                 label="Şəhər"
                 options={cityOptions}
-                value={cityOptions.find(option => option.value === formData.city)}
-                onChange={(option) => setFormData(prev => ({ ...prev, city: option?.value || '' }))}
+                value={cityOptions.find(option => option.value === formData.cityId)}
+                onChange={(option) => setFormData(prev => ({ ...prev, cityId: option?.value || '' }))}
                 placeholder="Şəhər seçin"
                 isClearable
                 required
@@ -199,6 +343,28 @@ export default function CreateListingPage() {
                 step="0.01"
                 required
               />
+
+              {/* Checkboxes */}
+              <div className="flex flex-col gap-3">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.isNew}
+                    onChange={(e) => setFormData(prev => ({ ...prev, isNew: e.target.checked }))}
+                    className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary focus:ring-2"
+                  />
+                  <span className="text-gray-900 text-sm font-medium">Yeni məhsul</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.isDeliverable}
+                    onChange={(e) => setFormData(prev => ({ ...prev, isDeliverable: e.target.checked }))}
+                    className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary focus:ring-2"
+                  />
+                  <span className="text-gray-900 text-sm font-medium">Çatdırılma mümkündür</span>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -318,21 +484,30 @@ export default function CreateListingPage() {
             </div>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="bg-error/10 border border-error rounded-lg p-4">
+              <p className="text-error text-sm font-medium">{error}</p>
+            </div>
+          )}
+
           {/* Form Actions */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-end">
             <Link href={ROUTES.HOME}>
               <button
                 type="button"
-                className="w-full sm:w-auto px-6 h-12 rounded-lg border border-gray-300 bg-white text-gray-900 font-bold hover:bg-gray-50 transition-colors"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto px-6 h-12 rounded-lg border border-gray-300 bg-white text-gray-900 font-bold hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 İmtina et
               </button>
             </Link>
             <button
               type="submit"
-              className="w-full sm:w-auto px-6 h-12 rounded-lg bg-primary text-white font-bold hover:bg-primary-dark transition-colors"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto px-6 h-12 rounded-lg bg-primary text-white font-bold hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Elanı Dərc Et
+              {isSubmitting ? 'Yüklənir...' : 'Elanı Dərc Et'}
             </button>
           </div>
         </form>

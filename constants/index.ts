@@ -1,15 +1,12 @@
-export const APP_NAME = 'İkinciel';
-export const APP_DESCRIPTION = 'Buy and sell second-hand items easily';
-
 export const ROUTES = {
   HOME: '/',
   LISTINGS: '/listings',
   PRODUCT: (id: string) => `/products/${id}`,
   CATEGORY: (slug: string) => `/categories/${slug}`,
-  PROFILE: '/profile',
-  MY_LISTINGS: '/profile/listings',
-  FAVORITES: '/profile/favorites',
-  MESSAGES: '/profile/messages',
+  PROFILE: '/cabinet',
+  MY_LISTINGS: '/cabinet/listings',
+  FAVORITES: '/cabinet/favorites',
+  MESSAGES: '/cabinet/messages',
   LOGIN: '/auth/login',
   REGISTER: '/auth/register',
   CREATE_LISTING: '/listings/create',

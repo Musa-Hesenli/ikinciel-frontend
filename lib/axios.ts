@@ -10,13 +10,25 @@ const axiosInstance: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // Enable sending cookies with requests
 });
 
-// Request interceptor - Cookies are automatically sent with withCredentials: true
+// Request interceptor - Add auth token to requests
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // No need to manually add token - cookies are sent automatically
+    // Get token from localStorage
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+
+    // Add token to headers if it exists
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    // For FormData, let axios set Content-Type automatically with boundary
+    // Remove default Content-Type if data is FormData
+    if (config.data instanceof FormData && config.headers) {
+      delete config.headers['Content-Type'];
+    }
+
     return config;
   },
   (error: AxiosError) => {
@@ -24,7 +36,7 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response interceptor - Handle common errors
+// Response interceptor - Handle common errors and token refresh
 axiosInstance.interceptors.response.use(
   (response) => {
     // Return successful response
@@ -38,16 +50,36 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // Try to refresh the token (cookies are sent automatically)
-        await axios.post(`${BASE_URL}auth/refresh`, {}, {
-          withCredentials: true,
-        });
+        // Try to refresh the token
+        const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
 
-        // Retry the original request (new cookie will be sent automatically)
-        return axiosInstance(originalRequest);
+        if (refreshToken) {
+          const response = await axios.post(`${BASE_URL}auth/refresh`, {
+            refreshToken,
+          });
+
+          const { accessToken, refreshToken: newRefreshToken } = response.data;
+
+          // Save new tokens
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('accessToken', accessToken);
+            if (newRefreshToken) {
+              localStorage.setItem('refreshToken', newRefreshToken);
+            }
+          }
+
+          // Retry the original request with new token
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          }
+
+          return axiosInstance(originalRequest);
+        }
       } catch (refreshError) {
-        // Refresh failed - redirect to login
+        // Refresh failed - clear tokens and redirect to login
         if (typeof window !== 'undefined') {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
           localStorage.removeItem('user');
           window.location.href = '/auth/login';
         }

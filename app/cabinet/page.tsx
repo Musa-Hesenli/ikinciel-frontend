@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import UserSidebar from '@/components/features/cabinet/UserSidebar';
 import UserListingCard from '@/components/features/cabinet/UserListingCard';
+import { adService, AccountAd } from '@/services/ad.service';
+import { getImageUrl } from '@/lib/utils';
 
 interface Listing {
   id: string;
@@ -11,190 +13,374 @@ interface Listing {
   price: number;
   imageUrl: string;
   postedDate: string;
-  status: 'active' | 'pending' | 'inactive';
+  status: 'active' | 'pending' | 'inactive' | 'rejected';
 }
 
-// Mock data - replace with API call
-const mockListings: Listing[] = [
-  {
-    id: '1',
-    title: 'Mərkəzdə 3 otaqlı mənzil',
-    location: 'Bakı, Nəsimi ray.',
-    price: 250000,
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAOsMF9Gc3d4ocWzu9d_cr7VnVy2ohyE3AzxaIfw3yFvR2eRSj6dk4WikioA_l4Mee94rxvzlTJeUY48DzaMn7dnZGK8Gpe7u_3beh7gaeGtVTGdN_YOBQ_o55lq73kP5hDtM5sL63ZS2rVcwQPzBlEvhU9VC3ljRI7k6N1mjdWa0RaG1d-LFd34uB2TvuF-bgWpTNXf7PPUYUEkp-z5B42lbynJwepxem4UbIt0IPjKoyfK6hjcfpBPxZWaTV3PU8rawZ4pIIms8Q',
-    postedDate: '12.08.2024',
-    status: 'active'
-  },
-  {
-    id: '2',
-    title: 'Chevrolet Camaro, 2015',
-    location: 'Sumqayıt',
-    price: 55000,
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCKlNkXzCcIGVCvkvs-JXZE8nmEcHHSNmQHpRt3ZVKuPZF_zS7YWQhd2XlfcEsHPrjvu7DO636lG3P5OcpzEJLjOetLthF_FpUv2ACg3pTs-7d2osh4zm9e4vcxyXmmQZlmkxSrsZfJTlAc0otqjLOWHoxVvAHfCMJAYkfvWYPZhPprAMte1MWwPBoMJr9Mkb7gdj0duLlKr8wVt0KF1EO5JtiLDlVzQCBAHVJAh-NrRUe1P0RQWrNJB5DKHent3iyrpqGZd0Dpto0',
-    postedDate: '10.08.2024',
-    status: 'active'
-  },
-  {
-    id: '3',
-    title: 'iPhone 14 Pro Max',
-    location: 'Bakı, Xətai ray.',
-    price: 1800,
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuARamETslBDFDknBtZk-FG83Wv-bA2ohn_L6boOD4QoZnAeqcnr_A7hRCBKj2zmwyMdar6zFHogZF528uwN2S28sI5nkEnYfT6CXSOqU65nbJUL5pN3D4Me-YSsAJ--STzNkiR92t9Htsm6KdUbQhNEoYtv5g1_C8VcaA9wS-lP5nztes21KPvdJMXXinlsUwuuvtEmL2NEgX-c0M43O37xhMXokXiV_iBAjjWyfNrgKustgxZgx95knQY0eqlnVzpURg0kx8mqoAY',
-    postedDate: '05.08.2024',
-    status: 'active'
-  },
-  {
-    id: '4',
-    title: 'MacBook Pro M2',
-    location: 'Bakı, Yasamal ray.',
-    price: 3500,
-    imageUrl: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800',
-    postedDate: '02.08.2024',
-    status: 'pending'
-  },
-  {
-    id: '5',
-    title: 'Samsung 65" QLED TV',
-    location: 'Gəncə',
-    price: 2200,
-    imageUrl: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=800',
-    postedDate: '25.07.2024',
-    status: 'inactive'
-  }
-];
-
 export default function CabinetPage() {
-  const [activeTab, setActiveTab] = useState<'active' | 'pending' | 'inactive'>('active');
+  const [activeTab, setActiveTab] = useState<'active' | 'pending' | 'inactive' | 'rejected'>('active');
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [counts, setCounts] = useState({
+    active: 0,
+    pending: 0,
+    inactive: 0,
+    rejected: 0,
+  });
 
-  const filteredListings = mockListings.filter(listing => listing.status === activeTab);
+  // Fetch ads based on active tab
+  useEffect(() => {
+    const fetchAds = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        let ads: AccountAd[] = [];
+        switch (activeTab) {
+          case 'active':
+            ads = await adService.getActiveAds();
+            break;
+          case 'pending':
+            ads = await adService.getPendingAds();
+            break;
+          case 'inactive':
+            ads = await adService.getInactiveAds();
+            break;
+          case 'rejected':
+            ads = await adService.getRejectedAds();
+            break;
+        }
 
-  const getTabCount = (status: 'active' | 'pending' | 'inactive') => {
-    return mockListings.filter(listing => listing.status === status).length;
+        // Transform API response to Listing format
+        const transformedListings: Listing[] = ads.map(ad => {
+          // Format date
+          let formattedDate = '';
+          if (ad.createdAt) {
+            try {
+              const date = new Date(ad.createdAt);
+              formattedDate = date.toLocaleDateString('az-AZ', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+              });
+            } catch (e) {
+              formattedDate = ad.createdAt;
+            }
+          }
+
+          // Get first image and prepend base URL if it's a relative path
+          const imageUrl = ad.images && ad.images.length > 0 
+            ? getImageUrl(ad.images[0])
+            : '';
+
+          // Normalize status to lowercase
+          const normalizedStatus = ad.status.toLowerCase() as 'active' | 'pending' | 'inactive' | 'rejected';
+
+          return {
+            id: ad.id.toString(),
+            title: ad.title,
+            location: ad.city || 'Şəhər göstərilməyib',
+            price: ad.price,
+            imageUrl: imageUrl,
+            postedDate: formattedDate,
+            status: normalizedStatus,
+          };
+        });
+
+        setListings(transformedListings);
+      } catch (err: any) {
+        setError(err.message || 'Elanları yükləmək mümkün olmadı');
+        console.error('Error fetching ads:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAds();
+  }, [activeTab]);
+
+  // Fetch counts for all tabs
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const [active, pending, inactive, rejected] = await Promise.all([
+          adService.getActiveAds(),
+          adService.getPendingAds(),
+          adService.getInactiveAds(),
+          adService.getRejectedAds(),
+        ]);
+
+        setCounts({
+          active: active.length,
+          pending: pending.length,
+          inactive: inactive.length,
+          rejected: rejected.length,
+        });
+      } catch (err) {
+        console.error('Error fetching counts:', err);
+      }
+    };
+
+    fetchCounts();
+  }, []);
+
+  const getTabCount = (status: 'active' | 'pending' | 'inactive' | 'rejected') => {
+    return counts[status];
   };
 
-  const handlePromote = (id: string) => {
-    console.log('Promote listing:', id);
-    // Implement promote functionality
+  const handlePromote = async (id: string) => {
+    try {
+      await adService.promoteAd(parseInt(id));
+      // Refresh current tab
+      const fetchAds = async () => {
+        let ads: AccountAd[] = [];
+        switch (activeTab) {
+          case 'active':
+            ads = await adService.getActiveAds();
+            break;
+          case 'pending':
+            ads = await adService.getPendingAds();
+            break;
+          case 'inactive':
+            ads = await adService.getInactiveAds();
+            break;
+          case 'rejected':
+            ads = await adService.getRejectedAds();
+            break;
+        }
+        const transformedListings: Listing[] = ads.map(ad => {
+          // Format date
+          let formattedDate = '';
+          if (ad.createdAt) {
+            try {
+              const date = new Date(ad.createdAt);
+              formattedDate = date.toLocaleDateString('az-AZ', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+              });
+            } catch (e) {
+              formattedDate = ad.createdAt;
+            }
+          }
+
+          // Get first image and prepend base URL if it's a relative path
+          const imageUrl = ad.images && ad.images.length > 0 
+            ? getImageUrl(ad.images[0])
+            : '';
+
+          // Normalize status to lowercase
+          const normalizedStatus = ad.status.toLowerCase() as 'active' | 'pending' | 'inactive' | 'rejected';
+
+          return {
+            id: ad.id.toString(),
+            title: ad.title,
+            location: ad.city || 'Şəhər göstərilməyib',
+            price: ad.price,
+            imageUrl: imageUrl,
+            postedDate: formattedDate,
+            status: normalizedStatus,
+          };
+        });
+        setListings(transformedListings);
+      };
+      await fetchAds();
+    } catch (err: any) {
+      console.error('Error promoting ad:', err);
+      alert(err.message || 'Elanı önə çıxarmaq mümkün olmadı');
+    }
   };
 
   const handleEdit = (id: string) => {
-    console.log('Edit listing:', id);
     // Navigate to edit page
+    window.location.href = `/listings/edit/${id}`;
   };
 
-  const handleDelete = (id: string) => {
-    console.log('Delete listing:', id);
-    // Implement delete functionality
+  const handleDelete = async (id: string) => {
+    if (!confirm('Bu elanı silmək istədiyinizə əminsiniz?')) {
+      return;
+    }
+
+    try {
+      await adService.deleteAd(parseInt(id));
+      // Remove from current list
+      setListings(prev => prev.filter(listing => listing.id !== id));
+      // Update counts
+      setCounts(prev => ({
+        ...prev,
+        [activeTab]: prev[activeTab as keyof typeof prev] - 1,
+      }));
+    } catch (err: any) {
+      console.error('Error deleting ad:', err);
+      alert(err.message || 'Elanı silmək mümkün olmadı');
+    }
   };
 
   return (
-    <main className="w-full mx-auto p-4 md:p-8 lg:p-10 max-w-7xl">
-      <div className="flex flex-col lg:flex-row gap-8">
-        <UserSidebar />
+    <main className="bg-gray-50 min-h-screen">
+      <div className="container mx-auto py-5 sm:py-10 px-4">
+        <div className="flex flex-col lg:flex-row gap-6">
+          <UserSidebar />
 
-        <div className="flex-1">
-          <div className="bg-surface-light dark:bg-surface-dark p-4 md:p-6 rounded-xl border border-border-light dark:border-border-dark">
-            {/* Page Heading */}
-            <div className="flex flex-wrap justify-between gap-3 p-4">
-              <div className="flex min-w-72 flex-col gap-2">
-                <p className="text-text-light-primary dark:text-text-dark-primary text-3xl font-black leading-tight tracking-[-0.033em]">
+          <div className="flex-1">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              {/* Page Heading */}
+              <div className="mb-6">
+                <h1 className="text-gray-900 text-3xl sm:text-4xl font-black leading-tight tracking-[-0.033em] mb-2">
                   Elanlarım
-                </p>
-                <p className="text-text-light-secondary dark:text-text-dark-secondary text-base font-normal leading-normal">
+                </h1>
+                <p className="text-gray-500 text-base font-normal leading-normal">
                   Elanlarınızı idarə edin və yenilərini əlavə edin.
                 </p>
               </div>
-            </div>
 
-            {/* Tabs */}
-            <div className="pb-3 mt-4">
-              <div className="flex border-b border-border-light dark:border-border-dark px-4 gap-8">
-                <button
-                  onClick={() => setActiveTab('active')}
-                  className={`flex items-center gap-2 justify-center border-b-[3px] pb-[13px] pt-4 ${
-                    activeTab === 'active'
-                      ? 'border-b-primary'
-                      : 'border-b-transparent'
-                  }`}
-                >
-                  <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${
-                    activeTab === 'active' ? 'text-primary' : 'text-text-light-secondary dark:text-text-dark-secondary'
-                  }`}>
-                    Aktiv
-                  </p>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                    activeTab === 'active'
-                      ? 'bg-primary/20 text-primary'
-                      : 'bg-gray-500/20 text-text-light-secondary dark:text-text-dark-secondary'
-                  }`}>
-                    {getTabCount('active')}
-                  </span>
-                </button>
+              {/* Tabs */}
+              <div className="border-b border-gray-200 mb-6">
+                <div className="flex gap-8 overflow-x-auto">
+                  <button
+                    onClick={() => setActiveTab('active')}
+                    className={`flex items-center gap-2 justify-center border-b-[3px] pb-3 pt-2 whitespace-nowrap ${
+                      activeTab === 'active'
+                        ? 'border-b-primary'
+                        : 'border-b-transparent'
+                    }`}
+                  >
+                    <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${
+                      activeTab === 'active' ? 'text-primary' : 'text-gray-500'
+                    }`}>
+                      Aktiv
+                    </p>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      activeTab === 'active'
+                        ? 'bg-primary/20 text-primary'
+                        : 'bg-gray-200 text-gray-500'
+                    }`}>
+                      {getTabCount('active')}
+                    </span>
+                  </button>
 
-                <button
-                  onClick={() => setActiveTab('pending')}
-                  className={`flex items-center gap-2 justify-center border-b-[3px] pb-[13px] pt-4 ${
-                    activeTab === 'pending'
-                      ? 'border-b-primary'
-                      : 'border-b-transparent'
-                  }`}
-                >
-                  <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${
-                    activeTab === 'pending' ? 'text-primary' : 'text-text-light-secondary dark:text-text-dark-secondary'
-                  }`}>
-                    Gözləmədə
-                  </p>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                    activeTab === 'pending'
-                      ? 'bg-primary/20 text-primary'
-                      : 'bg-gray-500/20 text-text-light-secondary dark:text-text-dark-secondary'
-                  }`}>
-                    {getTabCount('pending')}
-                  </span>
-                </button>
+                  <button
+                    onClick={() => setActiveTab('pending')}
+                    className={`flex items-center gap-2 justify-center border-b-[3px] pb-3 pt-2 whitespace-nowrap ${
+                      activeTab === 'pending'
+                        ? 'border-b-primary'
+                        : 'border-b-transparent'
+                    }`}
+                  >
+                    <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${
+                      activeTab === 'pending' ? 'text-primary' : 'text-gray-500'
+                    }`}>
+                      Gözləmədə
+                    </p>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      activeTab === 'pending'
+                        ? 'bg-primary/20 text-primary'
+                        : 'bg-gray-200 text-gray-500'
+                    }`}>
+                      {getTabCount('pending')}
+                    </span>
+                  </button>
 
-                <button
-                  onClick={() => setActiveTab('inactive')}
-                  className={`flex items-center gap-2 justify-center border-b-[3px] pb-[13px] pt-4 ${
-                    activeTab === 'inactive'
-                      ? 'border-b-primary'
-                      : 'border-b-transparent'
-                  }`}
-                >
-                  <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${
-                    activeTab === 'inactive' ? 'text-primary' : 'text-text-light-secondary dark:text-text-dark-secondary'
-                  }`}>
-                    Passiv
-                  </p>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                    activeTab === 'inactive'
-                      ? 'bg-primary/20 text-primary'
-                      : 'bg-gray-500/20 text-text-light-secondary dark:text-text-dark-secondary'
-                  }`}>
-                    {getTabCount('inactive')}
-                  </span>
-                </button>
+                  <button
+                    onClick={() => setActiveTab('inactive')}
+                    className={`flex items-center gap-2 justify-center border-b-[3px] pb-3 pt-2 whitespace-nowrap ${
+                      activeTab === 'inactive'
+                        ? 'border-b-primary'
+                        : 'border-b-transparent'
+                    }`}
+                  >
+                    <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${
+                      activeTab === 'inactive' ? 'text-primary' : 'text-gray-500'
+                    }`}>
+                      Passiv
+                    </p>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      activeTab === 'inactive'
+                        ? 'bg-primary/20 text-primary'
+                        : 'bg-gray-200 text-gray-500'
+                    }`}>
+                      {getTabCount('inactive')}
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('rejected')}
+                    className={`flex items-center gap-2 justify-center border-b-[3px] pb-3 pt-2 whitespace-nowrap ${
+                      activeTab === 'rejected'
+                        ? 'border-b-primary'
+                        : 'border-b-transparent'
+                    }`}
+                  >
+                    <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${
+                      activeTab === 'rejected' ? 'text-primary' : 'text-gray-500'
+                    }`}>
+                      Rədd edilmiş
+                    </p>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      activeTab === 'rejected'
+                        ? 'bg-primary/20 text-primary'
+                        : 'bg-gray-200 text-gray-500'
+                    }`}>
+                      {getTabCount('rejected')}
+                    </span>
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {/* Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
-              {filteredListings.map(listing => (
-                <UserListingCard
-                  key={listing.id}
-                  listing={listing}
-                  onPromote={handlePromote}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </div>
+              {/* Error Message */}
+              {error && (
+                <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-red-600 text-sm font-medium">{error}</p>
+                </div>
+              )}
 
-            {filteredListings.length === 0 && (
-              <div className="p-8 text-center text-text-light-secondary dark:text-text-dark-secondary">
-                Bu statusda elan yoxdur
-              </div>
-            )}
+              {/* Loading State */}
+              {isLoading ? (
+                <div className="flex items-center justify-center p-12">
+                  <div className="flex flex-col items-center gap-4">
+                    <svg
+                      className="animate-spin h-8 w-8 text-primary"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    <p className="text-gray-500 text-sm">Yüklənir...</p>
+                  </div>
+                </div>
+              ) : (
+                /* Cards Grid */
+                listings.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {listings.map(listing => (
+                      <UserListingCard
+                        key={listing.id}
+                        listing={listing}
+                        onPromote={handlePromote}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-gray-500">
+                    Bu statusda elan yoxdur
+                  </div>
+                )
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -1,9 +1,7 @@
 export interface User {
-  nameIdentifier: string;
-  email: string;
+  id: string;
   fullName: string;
-  phoneNumber: string;
-  balance: string;
+  email: string;
   roles: string[];
 }
 
@@ -16,17 +14,14 @@ export interface RegisterRequest {
   email: string;
   password: string;
   fullName: string;
-  phoneNumber?: string;
+  phoneNumber: string;
 }
 
-export interface LoginResponse {
-  message: string;
-  info: User;
-}
-
-export interface RegisterResponse {
-  message: string;
-  info: User;
+export interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  user: User;
 }
 
 export interface RefreshTokenRequest {
@@ -35,5 +30,6 @@ export interface RefreshTokenRequest {
 
 export interface RefreshTokenResponse {
   accessToken: string;
-  refreshToken?: string;
+  refreshToken: string;
+  expiresIn: number;
 }

@@ -56,8 +56,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (credentials: LoginRequest) => {
     try {
-      const response = await authService.login(credentials);
-      setUser(response.user);
+      const user = await authService.login(credentials);
+      setUser(user);
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -66,8 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (userData: RegisterRequest) => {
     try {
-      const response = await authService.register(userData);
-      setUser(response.user);
+      const user = await authService.register(userData);
+      setUser(user);
     } catch (error) {
       console.error('Register error:', error);
       throw error;

@@ -3,7 +3,6 @@ import {
   AuthResponse,
   LoginRequest,
   RegisterRequest,
-  RefreshTokenRequest,
   RefreshTokenResponse,
   User,
 } from '@/types/auth';
@@ -12,29 +11,31 @@ class AuthService {
   /**
    * Login user with email and password
    */
-  async login(credentials: LoginRequest): Promise<AuthResponse> {
+  async login(credentials: LoginRequest): Promise<User> {
     const response = await axiosInstance.post<AuthResponse>('/auth/login', credentials);
 
     // Store tokens and user data
     if (response.data) {
       this.setAuthData(response.data);
+      return response.data.user;
     }
 
-    return response.data;
+    throw new Error('Invalid login response');
   }
 
   /**
    * Register new user
    */
-  async register(userData: RegisterRequest): Promise<AuthResponse> {
+  async register(userData: RegisterRequest): Promise<User> {
     const response = await axiosInstance.post<AuthResponse>('/auth/register', userData);
 
     // Store tokens and user data
     if (response.data) {
       this.setAuthData(response.data);
+      return response.data.user;
     }
 
-    return response.data;
+    throw new Error('Invalid register response');
   }
 
   /**
@@ -59,7 +60,7 @@ class AuthService {
       refreshToken,
     });
 
-    // Update access token
+    // Update tokens
     if (response.data.accessToken) {
       localStorage.setItem('accessToken', response.data.accessToken);
 
@@ -81,9 +82,10 @@ class AuthService {
     // Update user data in localStorage
     if (response.data) {
       localStorage.setItem('user', JSON.stringify(response.data));
+      return response.data;
     }
 
-    return response.data;
+    throw new Error('Failed to get current user');
   }
 
   /**
