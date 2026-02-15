@@ -97,3 +97,28 @@ body {
 .thumbs-swiper .swiper-slide-thumb-active > div {
   border-color: #607afb !important;
 }
+
+/* Drag & reorder visuals */
+.drop-target-glow {
+  box-shadow: 0 8px 24px rgba(96, 122, 251, 0.12);
+}
+
+@keyframes swapPulse {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-6%); }
+  100% { transform: translateY(0); }
+}
+
+.swap-bubble {
+  animation: swapPulse 700ms ease-in-out infinite;
+}
+
+@keyframes borderPulse {
+  0% { box-shadow: 0 0 0 0 rgba(96,122,251,0.12); }
+  70% { box-shadow: 0 0 0 12px rgba(96,122,251,0); }
+  100% { box-shadow: 0 0 0 0 rgba(96,122,251,0); }
+}
+
+.drop-border-pulse {
+  animation: borderPulse 1.2s ease-out infinite;
+}

@@ -48,7 +48,13 @@ export default function CreateListingPage() {
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
+  const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
+  const [overIdx, setOverIdx] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dragItemIndex = useRef<number | null>(null);
+  const dragOverIndex = useRef<number | null>(null);
+  const createdUrlsRef = useRef<string[]>([]);
 
   // Fetch parent categories on mount
   useEffect(() => {
@@ -134,7 +140,11 @@ export default function CreateListingPage() {
     if (!files) return;
 
     const newFiles = Array.from(files);
-    const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+    const newPreviews = newFiles.map(file => {
+      const url = URL.createObjectURL(file);
+      createdUrlsRef.current.push(url);
+      return url;
+    });
 
     setImages(prev => [...prev, ...newFiles]);
     setImagePreviews(prev => [...prev, ...newPreviews]);
@@ -170,11 +180,87 @@ export default function CreateListingPage() {
     setImages(prev => prev.filter((_, i) => i !== index));
     setImagePreviews(prev => {
       const newPreviews = prev.filter((_, i) => i !== index);
-      // Revoke the URL to free up memory
-      URL.revokeObjectURL(prev[index]);
+      // Revoke the URL to free up memory and remove from created list
+      const url = prev[index];
+      try {
+        URL.revokeObjectURL(url);
+      } catch (e) {}
+      createdUrlsRef.current = createdUrlsRef.current.filter(u => u !== url);
       return newPreviews;
     });
   };
+
+  // Preview drag-and-drop handlers for reordering
+  const handlePreviewDragStart = (e: React.DragEvent, index: number) => {
+    dragItemIndex.current = index;
+    setDraggingIdx(index);
+    setIsReordering(true);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handlePreviewDragEnter = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    dragOverIndex.current = index;
+    setOverIdx(index);
+  };
+
+  const handlePreviewDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handlePreviewDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const from = dragItemIndex.current;
+    const to = dragOverIndex.current;
+    if (from === null || to === null || from === to) {
+      dragItemIndex.current = null;
+      dragOverIndex.current = null;
+      setDraggingIdx(null);
+      setOverIdx(null);
+      setIsReordering(false);
+      return;
+    }
+
+    setImages(prev => {
+      const arr = [...prev];
+      const [item] = arr.splice(from, 1);
+      arr.splice(to, 0, item);
+      return arr;
+    });
+
+    setImagePreviews(prev => {
+      const arr = [...prev];
+      const [item] = arr.splice(from, 1);
+      arr.splice(to, 0, item);
+      return arr;
+    });
+
+    dragItemIndex.current = null;
+    dragOverIndex.current = null;
+    setDraggingIdx(null);
+    setOverIdx(null);
+    setIsReordering(false);
+  };
+
+  const handlePreviewDragEnd = () => {
+    dragItemIndex.current = null;
+    dragOverIndex.current = null;
+    setDraggingIdx(null);
+    setOverIdx(null);
+    setIsReordering(false);
+  };
+
+  // Revoke any created object URLs on unmount
+  useEffect(() => {
+    return () => {
+      createdUrlsRef.current.forEach(url => {
+        try {
+          URL.revokeObjectURL(url);
+        } catch (e) {}
+      });
+      createdUrlsRef.current = [];
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -416,30 +502,54 @@ export default function CreateListingPage() {
             {/* Image Previews */}
             {imagePreviews.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
-                {imagePreviews.map((preview, index) => (
-                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group">
-                    <img
-                      src={preview}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeImage(index);
-                      }}
-                      className="absolute top-2 right-2 w-8 h-8 bg-error text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                {imagePreviews.map((preview, index) => {
+                  const isDragged = isReordering && draggingIdx === index;
+                  const isOverTarget = isReordering && overIdx === index && draggingIdx !== index;
+
+                  return (
+                    <div
+                      key={index}
+                      draggable
+                      onDragStart={(e) => handlePreviewDragStart(e, index)}
+                      onDragEnter={(e) => handlePreviewDragEnter(e, index)}
+                      onDragOver={handlePreviewDragOver}
+                      onDrop={handlePreviewDrop}
+                      onDragEnd={handlePreviewDragEnd}
+                      className={`relative aspect-square rounded-lg overflow-hidden border border-gray-200 group transition-transform duration-200 select-none ${isDragged ? 'scale-105 z-30 shadow-xl rotate-[1deg] cursor-grabbing' : 'cursor-grab'} ${isOverTarget ? 'ring-2 ring-dashed ring-primary/60 bg-primary/5 drop-border-pulse' : ''}`}
                     >
-                      <span className="material-symbols-outlined !text-lg">close</span>
-                    </button>
-                    {index === 0 && (
-                      <div className="absolute bottom-2 left-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded">
-                        Əsas
-                      </div>
-                    )}
-                  </div>
-                ))}
+                      <img
+                        src={preview}
+                        alt={`Preview ${index + 1}`}
+                        className={`w-full h-full object-cover transition-transform duration-200 ${isDragged ? 'scale-110' : ''}`}
+                      />
+
+                      {isOverTarget && (
+                        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                          <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg animate-bounce swap-bubble">
+                            <span className="material-symbols-outlined">swap_horiz</span>
+                          </div>
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeImage(index);
+                        }}
+                        className="absolute top-2 right-2 w-8 h-8 bg-error text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <span className="material-symbols-outlined !text-lg">close</span>
+                      </button>
+
+                      {index === 0 && (
+                        <div className="absolute bottom-2 left-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded">
+                          Əsas
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

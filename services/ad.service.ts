@@ -58,7 +58,24 @@ export interface PremiumAd {
   image: string;
 }
 
+export interface ListingResponse {
+  id: number;
+  title: string;
+  price: number;
+  status: string;
+  image: string;
+  createdAt: string;
+}
+
 class AdService {
+  /**
+   * Get all ads
+   */
+  async getAllAds(): Promise<ListingResponse[]> {
+    const response = await axiosInstance.get<ListingResponse[]>('/ad/all');
+    return response.data;
+  }
+
   /**
    * Get categories
    * @param parentId Optional parent ID to get subcategories
@@ -161,6 +178,46 @@ class AdService {
   async getPremiumAds(): Promise<PremiumAd[]> {
     const response = await axiosInstance.get<PremiumAd[]>('/ad/premium');
     return response.data || [];
+  }
+  /**
+   * Get ad by ID
+   */
+  async getAdById(id: number): Promise<AccountAd> {
+    // Mock implementation for now
+    const mockAd: AccountAd = {
+      id: id,
+      title: 'Mock Ad Title',
+      description: 'This is a mock description for testing edit functionality.',
+      status: 'Active',
+      createdAt: new Date().toISOString(),
+      images: [],
+      category: 'Electronics',
+      price: 1500,
+      phoneNumber: '+994501234567',
+      email: 'test@example.com',
+      isVip: false,
+      isPremium: false,
+      isBoosted: false,
+      boostedAt: null,
+      isNew: true,
+      isDeliverable: true,
+      viewCount: 100,
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      city: 'Bakı',
+      adType: 'Sell',
+      fullName: 'Test User',
+      isStore: false,
+    };
+    return new Promise((resolve) => setTimeout(() => resolve(mockAd), 500));
+  }
+
+  /**
+   * Update an ad
+   */
+  async updateAd(id: number, adData: CreateAdRequest): Promise<any> {
+    // Mock implementation
+    console.log(`Updating ad ${id} with data:`, adData);
+    return new Promise((resolve) => setTimeout(() => resolve({ success: true }), 1000));
   }
 }
 

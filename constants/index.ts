@@ -10,6 +10,10 @@ export const ROUTES = {
   LOGIN: '/auth/login',
   REGISTER: '/auth/register',
   CREATE_LISTING: '/listings/create',
+  ADMIN: '/admin',
+  ADMIN_DASHBOARD: '/admin',
+  ADMIN_ADS: '/admin/ads',
+  ADMIN_USERS: '/admin/users',
 } as const;
 
 export const PRODUCT_CONDITIONS = [
@@ -42,4 +46,25 @@ export const POPULAR_CATEGORIES = [
   'Fashion',
   'Home & Garden',
   'Sports',
+] as const;
+
+export const ADMIN_NAV_ITEMS = [
+  { href: '/admin', icon: 'dashboard', label: 'Dashboard', filled: true },
+  { href: '/admin/ads', icon: 'article', label: 'Elan İdarəetməsi', filled: false },
+  { href: '/admin/users', icon: 'group', label: 'İstifadəçi İdarəetməsi', filled: false },
+] as const;
+
+export const AD_STATUSES = [
+  { value: 'all', label: 'Hamısı', color: 'default' as const },
+  { value: 'pending', label: 'Gözləmədə', color: 'warning' as const },
+  { value: 'active', label: 'Aktiv', color: 'success' as const },
+  { value: 'rejected', label: 'Rədd edilmiş', color: 'danger' as const },
+  { value: 'expired', label: 'Vaxtı keçmiş', color: 'default' as const },
+] as const;
+
+export const USER_STATUSES = [
+  { value: 'all', label: 'Hamısı', color: 'default' as const },
+  { value: 'active', label: 'Aktiv', color: 'success' as const },
+  { value: 'suspended', label: 'Dayandırılıb', color: 'warning' as const },
+  { value: 'banned', label: 'Blok edilib', color: 'danger' as const },
 ] as const;

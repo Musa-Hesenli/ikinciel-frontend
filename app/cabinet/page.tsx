@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import UserSidebar from '@/components/features/cabinet/UserSidebar';
 import UserListingCard from '@/components/features/cabinet/UserListingCard';
 import { adService, AccountAd } from '@/services/ad.service';
@@ -68,7 +69,7 @@ export default function CabinetPage() {
           }
 
           // Get first image and prepend base URL if it's a relative path
-          const imageUrl = ad.images && ad.images.length > 0 
+          const imageUrl = ad.images && ad.images.length > 0
             ? getImageUrl(ad.images[0])
             : '';
 
@@ -164,7 +165,7 @@ export default function CabinetPage() {
           }
 
           // Get first image and prepend base URL if it's a relative path
-          const imageUrl = ad.images && ad.images.length > 0 
+          const imageUrl = ad.images && ad.images.length > 0
             ? getImageUrl(ad.images[0])
             : '';
 
@@ -190,9 +191,11 @@ export default function CabinetPage() {
     }
   };
 
+  const router = useRouter();
+
   const handleEdit = (id: string) => {
     // Navigate to edit page
-    window.location.href = `/listings/edit/${id}`;
+    router.push(`/listings/edit/${id}`);
   };
 
   const handleDelete = async (id: string) => {
@@ -238,88 +241,76 @@ export default function CabinetPage() {
                 <div className="flex gap-8 overflow-x-auto">
                   <button
                     onClick={() => setActiveTab('active')}
-                    className={`flex items-center gap-2 justify-center border-b-[3px] pb-3 pt-2 whitespace-nowrap ${
-                      activeTab === 'active'
-                        ? 'border-b-primary'
-                        : 'border-b-transparent'
-                    }`}
+                    className={`flex items-center gap-2 justify-center border-b-[3px] pb-3 pt-2 whitespace-nowrap ${activeTab === 'active'
+                      ? 'border-b-primary'
+                      : 'border-b-transparent'
+                      }`}
                   >
-                    <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${
-                      activeTab === 'active' ? 'text-primary' : 'text-gray-500'
-                    }`}>
+                    <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${activeTab === 'active' ? 'text-primary' : 'text-gray-500'
+                      }`}>
                       Aktiv
                     </p>
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                      activeTab === 'active'
-                        ? 'bg-primary/20 text-primary'
-                        : 'bg-gray-200 text-gray-500'
-                    }`}>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${activeTab === 'active'
+                      ? 'bg-primary/20 text-primary'
+                      : 'bg-gray-200 text-gray-500'
+                      }`}>
                       {getTabCount('active')}
                     </span>
                   </button>
 
                   <button
                     onClick={() => setActiveTab('pending')}
-                    className={`flex items-center gap-2 justify-center border-b-[3px] pb-3 pt-2 whitespace-nowrap ${
-                      activeTab === 'pending'
-                        ? 'border-b-primary'
-                        : 'border-b-transparent'
-                    }`}
+                    className={`flex items-center gap-2 justify-center border-b-[3px] pb-3 pt-2 whitespace-nowrap ${activeTab === 'pending'
+                      ? 'border-b-primary'
+                      : 'border-b-transparent'
+                      }`}
                   >
-                    <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${
-                      activeTab === 'pending' ? 'text-primary' : 'text-gray-500'
-                    }`}>
+                    <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${activeTab === 'pending' ? 'text-primary' : 'text-gray-500'
+                      }`}>
                       Gözləmədə
                     </p>
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                      activeTab === 'pending'
-                        ? 'bg-primary/20 text-primary'
-                        : 'bg-gray-200 text-gray-500'
-                    }`}>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${activeTab === 'pending'
+                      ? 'bg-primary/20 text-primary'
+                      : 'bg-gray-200 text-gray-500'
+                      }`}>
                       {getTabCount('pending')}
                     </span>
                   </button>
 
                   <button
                     onClick={() => setActiveTab('inactive')}
-                    className={`flex items-center gap-2 justify-center border-b-[3px] pb-3 pt-2 whitespace-nowrap ${
-                      activeTab === 'inactive'
-                        ? 'border-b-primary'
-                        : 'border-b-transparent'
-                    }`}
+                    className={`flex items-center gap-2 justify-center border-b-[3px] pb-3 pt-2 whitespace-nowrap ${activeTab === 'inactive'
+                      ? 'border-b-primary'
+                      : 'border-b-transparent'
+                      }`}
                   >
-                    <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${
-                      activeTab === 'inactive' ? 'text-primary' : 'text-gray-500'
-                    }`}>
+                    <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${activeTab === 'inactive' ? 'text-primary' : 'text-gray-500'
+                      }`}>
                       Passiv
                     </p>
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                      activeTab === 'inactive'
-                        ? 'bg-primary/20 text-primary'
-                        : 'bg-gray-200 text-gray-500'
-                    }`}>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${activeTab === 'inactive'
+                      ? 'bg-primary/20 text-primary'
+                      : 'bg-gray-200 text-gray-500'
+                      }`}>
                       {getTabCount('inactive')}
                     </span>
                   </button>
 
                   <button
                     onClick={() => setActiveTab('rejected')}
-                    className={`flex items-center gap-2 justify-center border-b-[3px] pb-3 pt-2 whitespace-nowrap ${
-                      activeTab === 'rejected'
-                        ? 'border-b-primary'
-                        : 'border-b-transparent'
-                    }`}
+                    className={`flex items-center gap-2 justify-center border-b-[3px] pb-3 pt-2 whitespace-nowrap ${activeTab === 'rejected'
+                      ? 'border-b-primary'
+                      : 'border-b-transparent'
+                      }`}
                   >
-                    <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${
-                      activeTab === 'rejected' ? 'text-primary' : 'text-gray-500'
-                    }`}>
+                    <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${activeTab === 'rejected' ? 'text-primary' : 'text-gray-500'
+                      }`}>
                       Rədd edilmiş
                     </p>
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                      activeTab === 'rejected'
-                        ? 'bg-primary/20 text-primary'
-                        : 'bg-gray-200 text-gray-500'
-                    }`}>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${activeTab === 'rejected'
+                      ? 'bg-primary/20 text-primary'
+                      : 'bg-gray-200 text-gray-500'
+                      }`}>
                       {getTabCount('rejected')}
                     </span>
                   </button>
