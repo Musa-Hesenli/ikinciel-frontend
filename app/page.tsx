@@ -1,161 +1,151 @@
-import Link from 'next/link';
-import { Container } from '@/components/layout';
-import SearchBar from '@/components/features/search/SearchBar';
+'use client';
+
+import { useEffect, useState } from 'react';
 import CategoryGrid from '@/components/features/categories/CategoryGrid';
 import ProductGrid from '@/components/features/products/ProductGrid';
-import { Button } from '@/components/ui';
-import { ROUTES } from '@/constants';
 import { Category, Product } from '@/types';
+import { adService, PremiumAd } from '@/services/ad.service';
+import { getImageUrl } from '@/lib/utils';
 
 // Mock data - replace with actual API calls
 const mockCategories: Category[] = [
-  { id: '1', name: 'Electronics', slug: 'electronics', icon: '💻', productCount: 1234 },
-  { id: '2', name: 'Vehicles', slug: 'vehicles', icon: '🚗', productCount: 856 },
-  { id: '3', name: 'Real Estate', slug: 'real-estate', icon: '🏠', productCount: 543 },
-  { id: '4', name: 'Fashion', slug: 'fashion', icon: '👔', productCount: 2341 },
-  { id: '5', name: 'Home & Garden', slug: 'home-garden', icon: '🛋️', productCount: 987 },
-  { id: '6', name: 'Sports', slug: 'sports', icon: '⚽', productCount: 456 },
-];
-
-const mockProducts: Product[] = [
-  {
-    id: '1',
-    title: 'iPhone 13 Pro Max 256GB',
-    description: 'Great condition, barely used',
-    price: 1500,
-    currency: '₼',
-    images: ['/placeholder-product.jpg'],
-    category: mockCategories[0],
-    location: { id: '1', city: 'Baku', region: 'Nasimi', country: 'Azerbaijan' },
-    seller: { id: '1', name: 'John Doe', email: 'john@example.com', createdAt: new Date(), isVerified: true },
-    condition: 'used',
-    status: 'active',
-    viewCount: 245,
-    favoriteCount: 12,
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-    updatedAt: new Date(),
-    isFeatured: true,
-  },
-  {
-    id: '2',
-    title: 'MacBook Pro 14" M1 Pro',
-    description: 'Like new, with original box',
-    price: 3200,
-    currency: '₼',
-    images: ['/placeholder-product.jpg'],
-    category: mockCategories[0],
-    location: { id: '2', city: 'Baku', region: 'Yasamal', country: 'Azerbaijan' },
-    seller: { id: '2', name: 'Jane Smith', email: 'jane@example.com', createdAt: new Date(), isVerified: true },
-    condition: 'new',
-    status: 'active',
-    viewCount: 189,
-    favoriteCount: 8,
-    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
-    updatedAt: new Date(),
-  },
-  {
-    id: '3',
-    title: 'Samsung Galaxy S23 Ultra',
-    description: 'Perfect condition, under warranty',
-    price: 1800,
-    currency: '₼',
-    images: ['/placeholder-product.jpg'],
-    category: mockCategories[0],
-    location: { id: '3', city: 'Baku', region: 'Sabunchu', country: 'Azerbaijan' },
-    seller: { id: '3', name: 'Mike Johnson', email: 'mike@example.com', createdAt: new Date(), isVerified: false },
-    condition: 'used',
-    status: 'active',
-    viewCount: 156,
-    favoriteCount: 5,
-    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-    updatedAt: new Date(),
-  },
-  {
-    id: '4',
-    title: 'Sony PlayStation 5',
-    description: 'Brand new, sealed',
-    price: 900,
-    currency: '₼',
-    images: ['/placeholder-product.jpg'],
-    category: mockCategories[0],
-    location: { id: '4', city: 'Baku', region: 'Khatai', country: 'Azerbaijan' },
-    seller: { id: '4', name: 'Sarah Williams', email: 'sarah@example.com', createdAt: new Date(), isVerified: true },
-    condition: 'new',
-    status: 'active',
-    viewCount: 342,
-    favoriteCount: 23,
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-    updatedAt: new Date(),
-    isPromoted: true,
-  },
+  { id: '1', name: 'Nəqliyyat', slug: 'transport', icon: 'directions_car' },
+  { id: '2', name: 'Daşınmaz əmlak', slug: 'real-estate', icon: 'home' },
+  { id: '3', name: 'Elektronika', slug: 'electronics', icon: 'devices' },
+  { id: '4', name: 'İş və biznes', slug: 'business', icon: 'work' },
+  { id: '5', name: 'Şəxsi əşyalar', slug: 'personal', icon: 'watch' },
+  { id: '6', name: 'Hobbi və asudə', slug: 'hobbies', icon: 'sports_esports' },
+  { id: '7', name: 'Heyvanlar', slug: 'animals', icon: 'pets' },
+  { id: '8', name: 'Xidmətlər', slug: 'services', icon: 'home_repair_service' },
+  { id: '9', name: 'Uşaq aləmi', slug: 'kids', icon: 'stroller' },
+  { id: '10', name: 'Ev və bağ üçün', slug: 'home-garden', icon: 'chair' },
+  { id: '11', name: 'Təmir və tikinti', slug: 'construction', icon: 'construction' },
+  { id: '12', name: 'Digər', slug: 'other', icon: 'more_horiz' },
 ];
 
 export default function Home() {
+  const [premiumProducts, setPremiumProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPremiumAds = async () => {
+      try {
+        const premiumAds = await adService.getPremiumAds();
+        
+        // Transform PremiumAd to Product format
+        const transformedProducts: Product[] = premiumAds.map((ad: PremiumAd) => {
+          const imageUrl = getImageUrl(ad.image);
+          
+          return {
+            id: ad.id.toString(),
+            title: ad.title,
+            description: '',
+            price: ad.price,
+            currency: 'AZN',
+            images: imageUrl ? [imageUrl] : [],
+            category: mockCategories[0], // Default category
+            location: { id: '1', city: 'Bakı', region: 'Bakı', country: 'Azerbaijan' },
+            seller: { 
+              id: '1', 
+              name: '', 
+              email: '', 
+              createdAt: new Date(), 
+              isVerified: false 
+            },
+            condition: 'used',
+            status: 'active',
+            viewCount: 0,
+            favoriteCount: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            isPremium: true,
+          };
+        });
+
+        setPremiumProducts(transformedProducts);
+      } catch (error) {
+        console.error('Error fetching premium ads:', error);
+        // Keep empty array on error
+        setPremiumProducts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPremiumAds();
+  }, []);
+
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary to-primary-dark text-white py-16">
-        <Container>
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Buy & Sell Anything
-            </h1>
-            <p className="text-lg md:text-xl mb-8 text-blue-100">
-              The largest marketplace for second-hand items in Azerbaijan
-            </p>
-            <div className="max-w-2xl mx-auto">
-              <SearchBar />
+    <main className="bg-gray-50">
+      <div className="container mx-auto">
+        <div className="flex gap-4 lg:gap-6">
+          {/* Left Banner */}
+          <aside className="hidden xl:block w-48 2xl:w-64 flex-shrink-0">
+            <div className="sticky top-4 pt-4">
+              <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-6 h-[600px] flex items-center justify-center border border-purple-200">
+                <p className="text-sm text-gray-500 text-center">Reklam sahəsi</p>
+              </div>
             </div>
-          </div>
-        </Container>
-      </section>
+          </aside>
 
-      {/* Categories Section */}
-      <section className="py-12 bg-gray-50">
-        <Container>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Browse Categories</h2>
-          </div>
-          <CategoryGrid categories={mockCategories} />
-        </Container>
-      </section>
+          {/* Main Content */}
+          <div className="flex-1 min-w-0">
+            {/* Categories Section */}
+            <CategoryGrid categories={mockCategories} />
 
-      {/* Featured Products */}
-      <section className="py-12">
-        <Container>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Featured Listings</h2>
-            <Link href={ROUTES.LISTINGS}>
-              <Button variant="outline" size="sm">
-                View All
-              </Button>
-            </Link>
+            {/* Premium Products */}
+            {isLoading ? (
+              <div className="container mx-auto px-4 sm:px-10 py-5 sm:py-10">
+                <div className="flex flex-col gap-6">
+                  <div className="flex flex-col gap-2">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Premium Elanlar</h1>
+                    <p className="text-sm sm:text-base text-gray-600">Ən yaxşı və seçilmiş elanları kəşf edin</p>
+                  </div>
+                  <div className="flex items-center justify-center py-12">
+                    <svg
+                      className="animate-spin h-8 w-8 text-primary"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <ProductGrid
+                products={premiumProducts}
+                title="Premium Elanlar"
+                description="Ən yaxşı və seçilmiş elanları kəşf edin"
+                viewAllLink="/listings?premium=true"
+                emptyMessage="Premium elan tapılmadı"
+              />
+            )}
           </div>
-          <ProductGrid products={mockProducts} />
-        </Container>
-      </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-muted">
-        <Container>
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Ready to Sell?
-            </h2>
-            <p className="text-lg text-gray-600 mb-8">
-              Post your ad for free and reach thousands of potential buyers
-            </p>
-            <Link href={ROUTES.CREATE_LISTING}>
-              <Button size="lg">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Post Your Ad Now
-              </Button>
-            </Link>
-          </div>
-        </Container>
-      </section>
-    </div>
+          {/* Right Banner */}
+          <aside className="hidden xl:block w-48 2xl:w-64 flex-shrink-0">
+            <div className="sticky top-4 pt-4">
+              <div className="bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl p-6 h-[600px] flex items-center justify-center border border-blue-200">
+                <p className="text-sm text-gray-500 text-center">Reklam sahəsi</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </main>
   );
 }

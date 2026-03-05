@@ -1,8 +1,9 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Product } from '@/types';
-import { Card } from '@/components/ui';
-import { Badge } from '@/components/ui';
 import { formatPrice, formatRelativeTime } from '@/lib/utils';
 import { ROUTES } from '@/constants';
 
@@ -11,78 +12,98 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const [mounted, setMounted] = useState(false);
   const mainImage = product.images[0] || '/placeholder-product.jpg';
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Ensure image URL is absolute or valid for Next.Image if it's from external source
+  // For this mock, we assume URLs are valid or configured in next.config.js
+
   return (
-    <Link href={ROUTES.PRODUCT(product.id)}>
-      <Card hover className="h-full">
-        {/* Image Container */}
-        <div className="relative aspect-[4/3] bg-gray-100">
-          <Image
-            src={mainImage}
-            alt={product.title}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-          {product.isFeatured && (
-            <div className="absolute top-2 left-2">
-              <Badge variant="warning">Featured</Badge>
+    <div className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-transparent hover:border-gray-100 flex flex-col h-full overflow-hidden">
+      {/* Image Container */}
+      <Link href={ROUTES.PRODUCT(product.id)} className="block relative aspect-[4/3] overflow-hidden bg-gray-100">
+        <Image
+          src={mainImage}
+          alt={product.title}
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+        />
+
+        {/* Overlay Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+        {/* Badges */}
+        <div className="absolute top-3 left-3 flex flex-col gap-2">
+          {product.isPremium && (
+            <div className="bg-yellow-400 text-black text-[10px] font-bold px-2 py-1 rounded-full shadow-lg backdrop-blur-sm flex items-center gap-1">
+              <span className="material-symbols-outlined !text-[14px]">workspace_premium</span>
+              <span>PREMIUM</span>
             </div>
           )}
-          {product.isPromoted && (
-            <div className="absolute top-2 left-2">
-              <Badge variant="primary">Promoted</Badge>
+          {product.condition === 'new' && (
+            <div className="bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg backdrop-blur-sm">
+              YENİ
             </div>
           )}
-          <button
-            className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
-            onClick={(e) => {
-              e.preventDefault();
-              // Handle favorite toggle
-            }}
-          >
-            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-          </button>
         </div>
 
-        {/* Content */}
-        <div className="p-4">
-          <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 h-12">
-            {product.title}
-          </h3>
+        {/* Favorite Button - Visible on Hover (or always on mobile if needed) */}
+        <button
+          className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white text-gray-400 hover:text-red-500 rounded-full shadow-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0"
+          onClick={(e) => {
+            e.preventDefault();
+            // Handle favorite logic
+          }}
+        >
+          <span className="material-symbols-outlined !text-[20px] block">favorite</span>
+        </button>
 
-          <div className="flex items-baseline justify-between mb-2">
-            <p className="text-xl font-bold text-primary">
-              {formatPrice(product.price, product.currency)}
-            </p>
-            <Badge variant="default">{product.condition}</Badge>
+        {/* Store Badge */}
+        {product.store && (
+          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-2 py-1 rounded-lg border border-white/10">
+            <span className="material-symbols-outlined text-white !text-[16px]">storefront</span>
+            <span className="text-white text-xs font-medium truncate max-w-[100px]">{product.store.name}</span>
+          </div>
+        )}
+      </Link>
+
+      {/* Content */}
+      <div className="p-4 flex flex-col flex-grow">
+        <div className="flex-grow">
+          {/* Price */}
+          <div className="flex items-baseline gap-1 mb-2">
+            <span className="text-lg font-black text-gray-900">
+              {formatPrice(product.price, product.currency).split(' ')[0]}
+            </span>
+            <span className="text-sm font-bold text-gray-500">
+              {product.currency}
+            </span>
           </div>
 
-          <div className="flex items-center text-sm text-gray-500 mb-1">
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            {product.location.city}, {product.location.region}
-          </div>
-
-          <div className="flex items-center justify-between text-xs text-gray-400">
-            <span>{formatRelativeTime(product.createdAt)}</span>
-            <div className="flex items-center space-x-3">
-              <span className="flex items-center">
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                {product.viewCount}
-              </span>
-            </div>
-          </div>
+          {/* Title */}
+          <Link href={ROUTES.PRODUCT(product.id)}>
+            <h3 className="text-gray-900 font-medium text-sm leading-snug line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+              {product.title}
+            </h3>
+          </Link>
         </div>
-      </Card>
-    </Link>
+
+        {/* Footer Info */}
+        <div className="pt-3 mt-1 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center gap-1 truncate max-w-[60%]">
+            <span className="material-symbols-outlined !text-[14px]">location_on</span>
+            <span className="truncate">{product.location.city}</span>
+          </div>
+          <span className="flex-shrink-0">
+            {mounted ? formatRelativeTime(product.createdAt) : '\u00A0'}
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }

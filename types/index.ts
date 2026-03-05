@@ -27,6 +27,13 @@ export interface Category {
   productCount?: number;
 }
 
+export interface Store {
+  id: string;
+  name: string;
+  logo?: string;
+  isVerified?: boolean;
+}
+
 export interface Product {
   id: string;
   title: string;
@@ -47,6 +54,8 @@ export interface Product {
   features?: Record<string, string | number | boolean>;
   isFeatured?: boolean;
   isPromoted?: boolean;
+  isPremium?: boolean;
+  store?: Store;
 }
 
 export interface SearchFilters {

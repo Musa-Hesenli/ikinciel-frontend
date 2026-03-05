@@ -2,105 +2,133 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Button } from '@/components/ui';
 import { ROUTES } from '@/constants';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      window.location.href = ROUTES.HOME;
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="container-custom">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href={ROUTES.HOME} className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">İ</span>
-            </div>
-            <span className="text-xl font-bold text-gray-900">İkinciel</span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link href={ROUTES.LISTINGS} className="text-gray-700 hover:text-primary transition-colors">
-              All Listings
-            </Link>
-            <Link href={ROUTES.HOME} className="text-gray-700 hover:text-primary transition-colors">
-              Categories
-            </Link>
-          </nav>
-
-          {/* Right Actions */}
-          <div className="flex items-center space-x-4">
-            <div className="hidden md:flex items-center space-x-3">
-              <Link href={ROUTES.FAVORITES}>
-                <Button variant="ghost" size="sm">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                </Button>
-              </Link>
-              <Link href={ROUTES.MESSAGES}>
-                <Button variant="ghost" size="sm">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                  </svg>
-                </Button>
-              </Link>
-              <Link href={ROUTES.LOGIN}>
-                <Button variant="outline" size="sm">
-                  Login
-                </Button>
-              </Link>
-            </div>
-            <Link href={ROUTES.CREATE_LISTING}>
-              <Button size="sm">
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+    <header className="w-full bg-white border-b border-solid border-gray-200 sticky top-0 z-50">
+      <div className="container mx-auto flex items-center justify-between whitespace-nowrap px-4 sm:px-10 py-3">
+        <div className="flex items-center gap-8">
+          <div className="flex items-center gap-4 text-gray-900">
+            <Link href={ROUTES.HOME} className="flex items-center gap-4">
+              <div className="size-6 text-primary">
+                <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path>
                 </svg>
-                Post Ad
-              </Button>
+              </div>
+              <h2 className="text-gray-900 text-lg font-bold leading-tight tracking-[-0.015em]">Elan.az</h2>
             </Link>
+          </div>
+          <label className="hidden md:flex flex-col min-w-40 !h-10 max-w-64">
+            <div className="flex w-full flex-1 items-stretch rounded-lg h-full">
+              <div className="text-gray-500 flex border-none bg-gray-100 items-center justify-center pl-4 rounded-l-lg border-r-0">
+                <span className="material-symbols-outlined">search</span>
+              </div>
+              <input
+                className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-gray-900 focus:outline-0 focus:ring-0 border-none bg-gray-100 focus:border-none h-full placeholder:text-gray-500 px-4 pl-2 text-base font-normal leading-normal"
+                placeholder="Axtarış"
+              />
+            </div>
+          </label>
+        </div>
+
+        <div className="flex flex-1 justify-end gap-4 md:gap-8">
+          <div className="hidden lg:flex items-center gap-9">
+            <Link href={ROUTES.LISTINGS} className="text-gray-900 text-sm font-medium leading-normal hover:text-primary transition-colors">
+              Bütün elanlar
+            </Link>
+            <Link href="/stores" className="text-gray-900 text-sm font-medium leading-normal hover:text-primary transition-colors">
+              Mağazalar
+            </Link>
+            <Link href="#" className="text-gray-900 text-sm font-medium leading-normal hover:text-primary transition-colors">
+              Yardım
+            </Link>
+          </div>
+
+          <div className="flex gap-2">
+            {isAuthenticated ? (
+              <>
+                <Link href={ROUTES.CREATE_LISTING}>
+                  <button className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-3 sm:px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary-dark transition-colors">
+                    <span className="material-symbols-outlined sm:hidden">add</span>
+                    <span className="hidden sm:inline truncate">Elan yerləşdir</span>
+                  </button>
+                </Link>
+                <Link href={ROUTES.FAVORITES}>
+                  <button className="hidden sm:flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-gray-100 text-gray-600 gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-gray-200 transition-colors">
+                    <span className="material-symbols-outlined">favorite</span>
+                  </button>
+                </Link>
+                <Link href={ROUTES.MESSAGES}>
+                  <button className="hidden sm:flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-gray-100 text-gray-600 gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-gray-200 transition-colors">
+                    <span className="material-symbols-outlined">notifications</span>
+                  </button>
+                </Link>
+              </>
+            ) : (
+              <Link href={ROUTES.LOGIN}>
+                <button className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-3 sm:px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary-dark transition-colors">
+                  <span className="truncate">Daxil ol</span>
+                </button>
+              </Link>
+            )}
 
             {/* Mobile menu button */}
             <button
-              className="md:hidden p-2"
+              className="lg:hidden flex items-center justify-center rounded-lg h-10 px-2.5 bg-gray-100 text-gray-600"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {isMobileMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
+              <span className="material-symbols-outlined">
+                {isMobileMenuOpen ? 'close' : 'menu'}
+              </span>
             </button>
           </div>
-        </div>
 
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200">
+          {isAuthenticated && (
+            <Link href={ROUTES.PROFILE}>
+              <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 bg-gray-300 hover:ring-2 hover:ring-primary transition-all cursor-pointer" />
+            </Link>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden border-t border-gray-200">
+          <div className="container mx-auto px-4 py-4">
             <nav className="flex flex-col space-y-3">
-              <Link href={ROUTES.LISTINGS} className="text-gray-700 hover:text-primary transition-colors py-2">
-                All Listings
+              <Link href={ROUTES.LISTINGS} className="text-gray-900 hover:text-primary transition-colors py-2">
+                Bütün elanlar
               </Link>
-              <Link href={ROUTES.HOME} className="text-gray-700 hover:text-primary transition-colors py-2">
-                Categories
+              <Link href="/stores" className="text-gray-900 hover:text-primary transition-colors py-2">
+                Mağazalar
               </Link>
-              <Link href={ROUTES.FAVORITES} className="text-gray-700 hover:text-primary transition-colors py-2">
-                Favorites
+              <Link href="#" className="text-gray-900 hover:text-primary transition-colors py-2">
+                Yardım
               </Link>
-              <Link href={ROUTES.MESSAGES} className="text-gray-700 hover:text-primary transition-colors py-2">
-                Messages
+              <Link href={ROUTES.FAVORITES} className="text-gray-900 hover:text-primary transition-colors py-2 sm:hidden">
+                Favoritlər
               </Link>
-              <Link href={ROUTES.LOGIN} className="text-gray-700 hover:text-primary transition-colors py-2">
-                Login
+              <Link href={ROUTES.MESSAGES} className="text-gray-900 hover:text-primary transition-colors py-2 sm:hidden">
+                Bildirişlər
               </Link>
             </nav>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </header>
   );
 }
